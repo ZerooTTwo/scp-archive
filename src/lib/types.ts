@@ -8,6 +8,7 @@ export interface Entry {
   code: string;
   title: string;
   seriesId: string;
+  source?: 'original' | 'translated';
   position: number;
   /** Timestamp when this entry was first discovered by a sync (0 = bundled seed). */
   firstSeen: number;
@@ -24,8 +25,10 @@ export interface SeriesDef {
   branch: Branch;
   page: string;
   label: string;
+  shortLabel: string;
   range: string;
   roman: string;
+  source: 'original' | 'translated';
 }
 
 export interface TocItem {

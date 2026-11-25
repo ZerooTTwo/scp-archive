@@ -1,7 +1,7 @@
 {
   "name": "scp-archive",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "SCP Archive — a Material 3, offline-first reader for the SCP Foundation wiki.",
   "license": "MIT",

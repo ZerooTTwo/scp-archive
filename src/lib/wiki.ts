@@ -214,6 +214,7 @@ export function parseSeriesPage(html: string, series: SeriesDef): Entry[] {
       code,
       title: title.slice(0, 200),
       seriesId: series.id,
+      source: series.source,
       position: entries.length,
       firstSeen: 0,
     });

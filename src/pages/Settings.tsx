@@ -243,7 +243,7 @@ export function SettingsPage() {
       <section className="settings-group">
         <h2 className="settings-group__title">关于</h2>
         <div className="settings-card">
-          <SettingRow title="SCP Archive" description="版本 0.1.0 · Capacitor + React">
+          <SettingRow title="SCP Archive" description="版本 0.1.1 · Capacitor + React">
             <Button variant="text" onClick={() => update(DEFAULT_SETTINGS)}>
               恢复默认
             </Button>

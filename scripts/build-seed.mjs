@@ -5,7 +5,7 @@ import path from 'node:path';
  * Builds the bundled catalog snapshot (public/seed/catalog.json).
  *
  * Why bundle a snapshot?
- *  - First launch works offline and is instant (no waiting for 15 wiki pages).
+ *  - First launch works offline and is instant (no waiting for 25 wiki pages).
  *  - The app can then run an incremental sync against the live wiki and only
  *    surface genuinely new entries.
  *
@@ -16,27 +16,37 @@ const BRANCHES = {
     base: 'https://scp-wiki-cn.wikidot.com',
     label: 'CN',
     series: [
-      { id: 'cn-1', page: 'scp-series-cn', range: '001 – 999' },
-      { id: 'cn-2', page: 'scp-series-cn-2', range: '1000 – 1999' },
-      { id: 'cn-3', page: 'scp-series-cn-3', range: '2000 – 2999' },
-      { id: 'cn-4', page: 'scp-series-cn-4', range: '3000 – 3999' },
-      { id: 'cn-5', page: 'scp-series-cn-5', range: '4000 – 4999' },
+      { id: 'cn-t1', page: 'scp-series', range: '001 – 999', source: 'translated' },
+      { id: 'cn-t2', page: 'scp-series-2', range: '1000 – 1999', source: 'translated' },
+      { id: 'cn-t3', page: 'scp-series-3', range: '2000 – 2999', source: 'translated' },
+      { id: 'cn-t4', page: 'scp-series-4', range: '3000 – 3999', source: 'translated' },
+      { id: 'cn-t5', page: 'scp-series-5', range: '4000 – 4999', source: 'translated' },
+      { id: 'cn-t6', page: 'scp-series-6', range: '5000 – 5999', source: 'translated' },
+      { id: 'cn-t7', page: 'scp-series-7', range: '6000 – 6999', source: 'translated' },
+      { id: 'cn-t8', page: 'scp-series-8', range: '7000 – 7999', source: 'translated' },
+      { id: 'cn-t9', page: 'scp-series-9', range: '8000 – 8999', source: 'translated' },
+      { id: 'cn-t10', page: 'scp-series-10', range: '9000 – 9999', source: 'translated' },
+      { id: 'cn-1', page: 'scp-series-cn', range: 'CN-001 – 999', source: 'original' },
+      { id: 'cn-2', page: 'scp-series-cn-2', range: 'CN-1000 – 1999', source: 'original' },
+      { id: 'cn-3', page: 'scp-series-cn-3', range: 'CN-2000 – 2999', source: 'original' },
+      { id: 'cn-4', page: 'scp-series-cn-4', range: 'CN-3000 – 3999', source: 'original' },
+      { id: 'cn-5', page: 'scp-series-cn-5', range: 'CN-4000 – 4999', source: 'original' },
     ],
   },
   en: {
     base: 'https://scp-wiki.wikidot.com',
     label: 'EN',
     series: [
-      { id: 'en-1', page: 'scp-series', range: '001 – 999' },
-      { id: 'en-2', page: 'scp-series-2', range: '1000 – 1999' },
-      { id: 'en-3', page: 'scp-series-3', range: '2000 – 2999' },
-      { id: 'en-4', page: 'scp-series-4', range: '3000 – 3999' },
-      { id: 'en-5', page: 'scp-series-5', range: '4000 – 4999' },
-      { id: 'en-6', page: 'scp-series-6', range: '5000 – 5999' },
-      { id: 'en-7', page: 'scp-series-7', range: '6000 – 6999' },
-      { id: 'en-8', page: 'scp-series-8', range: '7000 – 7999' },
-      { id: 'en-9', page: 'scp-series-9', range: '8000 – 8999' },
-      { id: 'en-10', page: 'scp-series-10', range: '9000 – 9999' },
+      { id: 'en-1', page: 'scp-series', range: '001 – 999', source: 'original' },
+      { id: 'en-2', page: 'scp-series-2', range: '1000 – 1999', source: 'original' },
+      { id: 'en-3', page: 'scp-series-3', range: '2000 – 2999', source: 'original' },
+      { id: 'en-4', page: 'scp-series-4', range: '3000 – 3999', source: 'original' },
+      { id: 'en-5', page: 'scp-series-5', range: '4000 – 4999', source: 'original' },
+      { id: 'en-6', page: 'scp-series-6', range: '5000 – 5999', source: 'original' },
+      { id: 'en-7', page: 'scp-series-7', range: '6000 – 6999', source: 'original' },
+      { id: 'en-8', page: 'scp-series-8', range: '7000 – 7999', source: 'original' },
+      { id: 'en-9', page: 'scp-series-9', range: '8000 – 8999', source: 'original' },
+      { id: 'en-10', page: 'scp-series-10', range: '9000 – 9999', source: 'original' },
     ],
   },
 };
@@ -159,6 +169,7 @@ async function main() {
         code: item.code,
         title: item.title,
         seriesId: result.series.id,
+        source: result.series.source,
         position: index,
         firstSeen: 0,
       });

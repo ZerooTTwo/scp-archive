@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { EntryRow } from '../components/EntryRow';
 import { Icon } from '../components/Icon';
@@ -21,7 +21,7 @@ import { useCatalog } from '../state/catalog';
 import { useLibrary } from '../state/library';
 import { useSettings } from '../state/settings';
 
-const PAGE_SIZE = 200;
+const PAGE_SIZE = 500;
 
 export function Browse() {
   useDocumentTitle('档案库');
@@ -42,6 +42,7 @@ export function Browse() {
 
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [query, setQuery] = useState('');
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setLimit(PAGE_SIZE);
@@ -54,8 +55,23 @@ export function Browse() {
     return sortEntries(list);
   }, [entries, branch, activeSeries, onlyNew]);
 
-  const visible = filtered.slice(0, limit);
+  const visible = activeSeries === 'all' ? filtered.slice(0, limit) : filtered;
+  const hasMore = activeSeries === 'all' && visible.length < filtered.length;
   const series = seriesForBranch(branch);
+
+  useEffect(() => {
+    const target = sentinelRef.current;
+    if (!target || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (records) => {
+        if (!records[0]?.isIntersecting) return;
+        setLimit((value) => Math.min(value + PAGE_SIZE, filtered.length));
+      },
+      { rootMargin: '800px 0px' },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [filtered.length, hasMore, visible.length]);
 
   const updateParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(params);
@@ -132,7 +148,7 @@ export function Browse() {
               selected={activeSeries === item.id}
               onClick={() => updateParam('series', item.id)}
             >
-              {item.roman} · {formatNumber(counts[item.id] ?? 0)}
+              {item.shortLabel} · {formatNumber(counts[item.id] ?? 0)}
             </Chip>
           ))}
           <span className="chip-divider" />
@@ -197,11 +213,15 @@ export function Browse() {
               );
             })}
           </div>
-          {visible.length < filtered.length ? (
-            <div className="load-more">
-              <Button variant="outline" onClick={() => setLimit((value) => value + PAGE_SIZE)}>
+          {hasMore ? (
+            <div className="load-more" ref={sentinelRef}>
+              <Button
+                variant="outline"
+                onClick={() => setLimit((value) => Math.min(value + PAGE_SIZE, filtered.length))}
+              >
                 加载更多（剩余 {formatNumber(filtered.length - visible.length)} 条）
               </Button>
+              <p className="load-more__hint">继续向下滚动会自动加载，直到显示全部。</p>
             </div>
           ) : (
             <p className="list-end">已显示全部 {formatNumber(filtered.length)} 条档案</p>

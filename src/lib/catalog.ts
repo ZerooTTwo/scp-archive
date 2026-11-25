@@ -24,7 +24,9 @@ export async function ensureCatalog(): Promise<Catalog> {
   if (loading) return loading;
   loading = (async () => {
     const stored = await readCatalog();
-    if (stored?.entries?.length) {
+    const knownSeries = new Set(stored?.entries?.map((entry) => entry.seriesId));
+    const complete = SERIES.every((series) => knownSeries.has(series.id));
+    if (stored?.entries?.length && complete) {
       memo = stored;
       return stored;
     }

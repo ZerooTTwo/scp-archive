@@ -34,6 +34,31 @@ export function Home() {
 
   const branch = settings.branch;
   const series = useMemo(() => seriesForBranch(branch), [branch]);
+  const seriesGroups =
+    branch === 'cn'
+      ? [
+          {
+            key: 'translated',
+            title: '中文译文',
+            hint: 'SCP-001 – 9999 · 10 卷',
+            items: series.filter((item) => item.source === 'translated'),
+          },
+          {
+            key: 'original',
+            title: '中文原创',
+            hint: 'SCP-CN-001 – 4999 · 5 卷',
+            items: series.filter((item) => item.source === 'original'),
+          },
+        ]
+      : [
+          {
+            key: 'original',
+            title: '英文总部',
+            hint: 'SCP-001 – 9999 · 10 卷',
+            items: series,
+          },
+        ];
+
   const newEntries = useMemo(
     () => sortEntries(entries.filter((entry) => entry.firstSeen > 0)).slice(0, 4),
     [entries],
@@ -158,7 +183,7 @@ export function Home() {
       ) : null}
 
       <section className="section">
-        <SectionHeader title="按系列浏览" hint="选择分部，再进入对应系列" />
+        <SectionHeader title="按系列浏览" hint="按分部切换，译文与原创分开归档" />
         <Segmented
           ariaLabel="选择分部"
           value={branch}
@@ -168,25 +193,33 @@ export function Home() {
             { value: 'en', label: BRANCH_LABEL.en },
           ]}
         />
-        <div className="series-grid">
-          {series.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="series-card"
-              onClick={() => navigate(`/browse?branch=${item.branch}&series=${item.id}`)}
-            >
-              <span className="series-card__roman">{item.roman}</span>
-              <span className="series-card__body">
-                <strong>{item.label}</strong>
-                <span>{item.range}</span>
-              </span>
-              <span className="series-card__count">
-                {loading ? '—' : formatNumber(counts[item.id] ?? 0)}
-              </span>
-            </button>
-          ))}
-        </div>
+        {seriesGroups.map((group) => (
+          <div key={group.key} className="series-group">
+            <div className="series-group__head">
+              <strong>{group.title}</strong>
+              <span>{group.hint}</span>
+            </div>
+            <div className="series-grid">
+              {group.items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="series-card"
+                  onClick={() => navigate(`/browse?branch=${item.branch}&series=${item.id}`)}
+                >
+                  <span className="series-card__roman">{item.roman}</span>
+                  <span className="series-card__body">
+                    <strong>{item.label}</strong>
+                    <span>{item.range}</span>
+                  </span>
+                  <span className="series-card__count">
+                    {loading ? '—' : formatNumber(counts[item.id] ?? 0)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
 
       {newEntries.length ? (

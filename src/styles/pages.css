@@ -352,6 +352,29 @@
 
 /* Series grid */
 
+.series-group + .series-group {
+  margin-top: 18px;
+}
+
+.series-group__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 0 2px;
+}
+
+.series-group__head strong {
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.series-group__head span {
+  color: var(--on-variant);
+  font-size: 11px;
+}
+
 .series-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

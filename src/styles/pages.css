@@ -1697,3 +1697,118 @@
     height: 29px;
   }
 }
+
+/* ── v0.4 app icon & translation settings ─────────────────────────────── */
+.icon-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.icon-choice {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  position: relative;
+  min-width: 0;
+  padding: 8px 22px 8px 8px;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--on);
+  text-align: left;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.icon-choice:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--outline-variant));
+}
+
+.icon-choice.is-selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface-2));
+}
+
+.icon-choice img {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+}
+
+.icon-choice > span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.icon-choice strong {
+  overflow: hidden;
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.icon-choice small {
+  overflow: hidden;
+  color: var(--on-3);
+  font-size: 9.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.icon-choice > svg {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--primary);
+}
+
+.translation-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 13px;
+}
+
+.translation-form {
+  display: grid;
+  gap: 10px;
+}
+
+.translation-field {
+  display: grid;
+  gap: 4px;
+}
+
+.translation-field > span {
+  padding-left: 3px;
+  color: var(--on-3);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+}
+
+.translation-field .field {
+  width: 100%;
+}
+
+.translation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+@media (max-width: 360px) {
+  .icon-choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Deep-linked settings sections should clear the sticky top bar. */
+#translation {
+  scroll-margin-top: calc(var(--topbar-height) + 20px);
+}

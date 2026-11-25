@@ -43,6 +43,22 @@ function mergeSettings(stored: Partial<Settings> | undefined): Settings {
         : DEFAULT_SETTINGS.lineHeight,
     serif: typeof stored.serif === 'boolean' ? stored.serif : DEFAULT_SETTINGS.serif,
     branch: stored.branch === 'en' ? 'en' : 'cn',
+    appIcon: stored.appIcon === 'cn' ? 'cn' : 'official',
+    translation: {
+      endpoint:
+        typeof stored.translation?.endpoint === 'string' &&
+        stored.translation.endpoint.trim()
+          ? stored.translation.endpoint.trim().slice(0, 500)
+          : DEFAULT_SETTINGS.translation.endpoint,
+      model:
+        typeof stored.translation?.model === 'string' && stored.translation.model.trim()
+          ? stored.translation.model.trim().slice(0, 160)
+          : DEFAULT_SETTINGS.translation.model,
+      apiKey:
+        typeof stored.translation?.apiKey === 'string'
+          ? stored.translation.apiKey.slice(0, 1000)
+          : '',
+    },
   };
 }
 
@@ -60,6 +76,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       // localStorage may be unavailable; the DB copy still applies.
     }
   }, [settings.clearance]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('scp-app-icon', settings.appIcon);
+    } catch {
+      // localStorage may be unavailable; the DB copy still applies.
+    }
+    const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (favicon) favicon.href = `/icons/${settings.appIcon}/icon-192.png`;
+    const apple = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+    if (apple) apple.href = `/icons/${settings.appIcon}/apple-touch-icon.png`;
+  }, [settings.appIcon]);
 
   useEffect(() => {
     let cancelled = false;

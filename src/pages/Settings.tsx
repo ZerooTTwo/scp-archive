@@ -1,13 +1,15 @@
-import { useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import {
   Button,
+  Chip,
   Dialog,
   LinearProgress,
   Segmented,
   Slider,
   Switch,
+  TextField,
   TopBar,
 } from '../components/ui';
 import {
@@ -24,6 +26,7 @@ import {
 import { clearAll } from '../lib/db';
 import { formatBytes, formatNumber, relativeTime } from '../lib/format';
 import { useDocumentTitle, useOnlineStatus } from '../lib/hooks';
+import { testTranslation } from '../lib/translate';
 import { useCatalog } from '../state/catalog';
 import { useLibrary } from '../state/library';
 import { useSettings } from '../state/settings';
@@ -54,7 +57,16 @@ function SettingRow({
 export function SettingsPage() {
   useDocumentTitle('设置');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const toast = useToast();
+
+  useEffect(() => {
+    if (searchParams.get('focus') !== 'translation') return;
+    const timer = window.setTimeout(() => {
+      document.getElementById('translation')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 220);
+    return () => window.clearTimeout(timer);
+  }, [searchParams]);
   const online = useOnlineStatus();
   const { settings, update, setTheme, setClearance, setBranch } = useSettings();
   const { total, syncing, progress, lastSync, syncNow } = useCatalog();
@@ -67,6 +79,7 @@ export function SettingsPage() {
     clearOfflineLibrary,
   } = useLibrary();
   const [confirm, setConfirm] = useState<'history' | 'offline' | 'all' | null>(null);
+  const [testing, setTesting] = useState(false);
 
   const offlineBytes = offline.reduce((sum, item) => sum + item.bytes, 0);
   const currentClearance = CLEARANCES[settings.clearance];
@@ -76,6 +89,23 @@ export function SettingsPage() {
   const goBack = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate('/');
+  };
+
+  const setTranslation = (patch: Partial<typeof settings.translation>) => {
+    update({ translation: { ...settings.translation, ...patch } });
+  };
+
+  const testApi = async () => {
+    if (testing) return;
+    setTesting(true);
+    try {
+      const sample = await testTranslation(settings.translation);
+      toast(`连接成功：${sample.slice(0, 48)}${sample.length > 48 ? '…' : ''}`);
+    } catch (error) {
+      toast(error instanceof Error ? error.message : '连接失败');
+    } finally {
+      setTesting(false);
+    }
   };
 
   return (
@@ -145,6 +175,39 @@ export function SettingsPage() {
           <p className="clearance-note">
             <Icon name="info" size={13} />
             这是阅读氛围设定：切换后配色、栏目与正文脱敏会立刻改变，不构成真实访问控制。
+          </p>
+        </div>
+      </section>
+
+      <section className="settings-group">
+        <h2 className="settings-group__title">应用标志</h2>
+        <div className="settings-card">
+          <div className="icon-choice-grid" role="radiogroup" aria-label="应用标志">
+            {(
+              [
+                { id: 'official', name: '官方标志', note: '基金会徽记' },
+                { id: 'cn', name: '中国分部', note: '中分龙形标志' },
+              ] as const
+            ).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="radio"
+                aria-checked={settings.appIcon === item.id}
+                className={`icon-choice${settings.appIcon === item.id ? ' is-selected' : ''}`}
+                onClick={() => update({ appIcon: item.id })}
+              >
+                <img src={`/icons/${item.id}/icon-192.png`} alt="" width={46} height={46} />
+                <span>
+                  <strong>{item.name}</strong>
+                  <small>{item.note}</small>
+                </span>
+                {settings.appIcon === item.id ? <Icon name="check" size={16} /> : null}
+              </button>
+            ))}
+          </div>
+          <p className="settings-hint">
+            应用内标志会立即切换。桌面图标由安装包决定：v0.4.0 同时提供官方版与中分版两个 APK。
           </p>
         </div>
       </section>
@@ -264,6 +327,103 @@ export function SettingsPage() {
         </div>
       </section>
 
+      <section className="settings-group" id="translation">
+        <h2 className="settings-group__title">
+          翻译接口 <span className="settings-group__aside">OpenAI 兼容</span>
+        </h2>
+        <div className="settings-card">
+          <div className="translation-presets">
+            <Chip
+              onClick={() =>
+                setTranslation({
+                  endpoint: 'https://api.deepseek.com/v1',
+                  model: 'deepseek-chat',
+                })
+              }
+            >
+              DeepSeek
+            </Chip>
+            <Chip
+              onClick={() =>
+                setTranslation({
+                  endpoint: 'https://api.openai.com/v1',
+                  model: 'gpt-4o-mini',
+                })
+              }
+            >
+              OpenAI
+            </Chip>
+            <Chip
+              onClick={() =>
+                setTranslation({
+                  endpoint: 'http://localhost:11434/v1',
+                  model: 'qwen2.5:7b',
+                })
+              }
+            >
+              本地 Ollama
+            </Chip>
+          </div>
+
+          <div className="translation-form">
+            <label className="translation-field">
+              <span>接口地址</span>
+              <TextField
+                value={settings.translation.endpoint}
+                onChange={(endpoint) => setTranslation({ endpoint })}
+                placeholder="https://api.deepseek.com/v1"
+                inputMode="url"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+            <label className="translation-field">
+              <span>模型</span>
+              <TextField
+                value={settings.translation.model}
+                onChange={(model) => setTranslation({ model })}
+                placeholder="deepseek-chat"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+            <label className="translation-field">
+              <span>API Key</span>
+              <TextField
+                value={settings.translation.apiKey}
+                onChange={(apiKey) => setTranslation({ apiKey })}
+                placeholder="sk-...（本地接口可留空）"
+                type="password"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+          </div>
+
+          <div className="translation-actions">
+            <Button
+              variant="tonal"
+              icon="globe"
+              disabled={testing || !settings.translation.endpoint.trim() || !settings.translation.model.trim()}
+              onClick={() => void testApi()}
+            >
+              {testing ? '测试中…' : '测试连接'}
+            </Button>
+            {settings.translation.apiKey ? (
+              <Button variant="text" onClick={() => setTranslation({ apiKey: '' })}>
+                清除 Key
+              </Button>
+            ) : null}
+          </div>
+
+          <p className="settings-hint">
+            按篇翻译当前英文档案，结果缓存在本机；不会自动批量翻译。Key
+            只保存在本地数据库，不会上传到本项目服务器。浏览器直连需要接口允许 CORS，安卓端通过
+            CapacitorHttp 直连。
+          </p>
+        </div>
+      </section>
+
       <section className="settings-group">
         <h2 className="settings-group__title">本地数据</h2>
         <div className="settings-card">
@@ -319,7 +479,7 @@ export function SettingsPage() {
       <section className="settings-group">
         <h2 className="settings-group__title">关于</h2>
         <div className="settings-card">
-          <SettingRow title="SCP 档案库" description="版本 0.3.0 · Capacitor + React">
+          <SettingRow title="SCP Archive" description="版本 0.4.0 · Capacitor + React">
             <Button variant="text" onClick={() => update(DEFAULT_SETTINGS)}>
               恢复默认
             </Button>

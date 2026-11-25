@@ -56,29 +56,40 @@ jobs:
           echo "SCP_KEY_ALIAS=$ANDROID_KEY_ALIAS" >> "$GITHUB_ENV"
           echo "SCP_KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> "$GITHUB_ENV"
 
-      - name: Build APK
+      - name: Build APKs
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleOfficialRelease assembleCnRelease --no-daemon
 
-      - name: Verify APK signature
+      - name: Verify APK signatures
         working-directory: android
         run: |
           SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
           APKSIGNER=$(find "$SDK_ROOT/build-tools" -name apksigner | sort -V | tail -1)
-          "$APKSIGNER" verify --print-certs app/build/outputs/apk/release/app-release.apk
+          for APK in app/build/outputs/apk/official/release/app-official-release.apk app/build/outputs/apk/cn/release/app-cn-release.apk; do
+            "$APKSIGNER" verify --print-certs "$APK"
+          done
 
-      - name: Upload APK artifact
+      - name: Collect APKs
+        working-directory: android
+        run: |
+          mkdir -p app/build/outputs/apk/release-assets
+          cp app/build/outputs/apk/official/release/app-official-release.apk app/build/outputs/apk/release-assets/scp-archive-official.apk
+          cp app/build/outputs/apk/cn/release/app-cn-release.apk app/build/outputs/apk/release-assets/scp-archive-cn.apk
+
+      - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: scp-archive-release-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          name: scp-archive-apks
+          path: android/app/build/outputs/apk/release-assets/*.apk
           if-no-files-found: error
 
-      - name: Attach APK to release
+      - name: Attach APKs to release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: android/app/build/outputs/apk/release/app-release.apk
+          files: |
+            android/app/build/outputs/apk/release-assets/scp-archive-official.apk
+            android/app/build/outputs/apk/release-assets/scp-archive-cn.apk
           generate_release_notes: true

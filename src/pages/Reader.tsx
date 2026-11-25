@@ -14,6 +14,7 @@ import {
   Chip,
   EmptyState,
   IconButton,
+  LinearProgress,
   Sheet,
   Skeleton,
   Slider,
@@ -31,12 +32,19 @@ import {
   BRANCH_LABEL,
   SERIES_BY_ID,
 } from '../lib/constants';
-import { readArticle } from '../lib/db';
+import { readArticle, readTranslation, writeTranslation } from '../lib/db';
 import { formatNumber } from '../lib/format';
 import { openExternal } from '../lib/external';
 import { isNative, lightHaptic, useDocumentTitle } from '../lib/hooks';
 import { cacheArticle, getReadingProgress } from '../lib/library';
-import type { Article, Branch, ProgressRecord, WikiErrorCode } from '../lib/types';
+import { translateArticle, translationConfigured, translationHost } from '../lib/translate';
+import type {
+  Article,
+  Branch,
+  ProgressRecord,
+  TranslationRecord,
+  WikiErrorCode,
+} from '../lib/types';
 import { tagLabel } from '../lib/tagLabels';
 import { fetchArticle, isOnline, WikiError } from '../lib/wiki';
 import { useCatalog } from '../state/catalog';
@@ -81,6 +89,10 @@ export function Reader() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [offlineBusy, setOfflineBusy] = useState(false);
   const [allTags, setAllTags] = useState(false);
+  const [translation, setTranslation] = useState<TranslationRecord | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translateProgress, setTranslateProgress] = useState({ done: 0, total: 0 });
 
   const savedRef = useRef<ProgressRecord | null>(null);
   const bodyRef = useRef<HTMLDivElement | null>(null);
@@ -93,23 +105,32 @@ export function Reader() {
     () => (branch === 'en' ? findEntry(entries, 'cn', slug) : undefined),
     [entries, branch, slug],
   );
-  const displayTitle = article ? entry?.title?.trim() || article.title : '';
+  const activeTranslation = translation && !showOriginal ? translation : null;
+  const displayTitle = article
+    ? activeTranslation?.title?.trim() || entry?.title?.trim() || article.title
+    : '';
   const tagList = article ? article.tags.filter((tag) => !tag.startsWith('_')) : [];
   const shownTags = allTags ? tagList : tagList.slice(0, 7);
   const security = useMemo(() => (article ? articleSecurity(article) : null), [article]);
+  const bodyHtml = activeTranslation?.html ?? article?.html ?? '';
   const redaction = useMemo(() => {
     if (!article || !security) return null;
     return redactArticleHtml(
-      article.html,
+      bodyHtml,
       settings.clearance,
       security.required,
       security.reason,
     );
-  }, [article, security, settings.clearance]);
+  }, [article, security, bodyHtml, settings.clearance]);
   useDocumentTitle(article ? `${article.code} · ${displayTitle}` : '阅读');
   const series = entry ? SERIES_BY_ID.get(entry.seriesId) : undefined;
   const favorite = isFavorite(branch, slug);
   const cached = offlineKeys.has(key);
+  const translationReady = translationConfigured(settings.translation);
+  const translationNeedsKey =
+    translationReady &&
+    !settings.translation.apiKey.trim() &&
+    /(^|\.)(deepseek\.com|openai\.com)$/.test(translationHost(settings.translation));
 
   useEffect(() => {
     setAllTags(false);
@@ -122,15 +143,21 @@ export function Reader() {
     setStatus('loading');
     setError('');
     setArticle(null);
+    setTranslation(null);
+    setShowOriginal(false);
+    setTranslating(false);
+    setTranslateProgress({ done: 0, total: 0 });
     setPercent(0);
     window.scrollTo({ top: 0, behavior: 'auto' });
 
     void (async () => {
-      const [stored, saved] = await Promise.all([
+      const [stored, saved, cachedTranslation] = await Promise.all([
         readArticle(branch, slug),
         getReadingProgress(branch, slug),
+        branch === 'en' ? readTranslation(branch, slug) : Promise.resolve(undefined),
       ]);
       if (cancelled) return;
+      setTranslation(cachedTranslation ?? null);
 
       savedRef.current = saved ?? null;
       progressRef.current = saved?.percent ?? 0;
@@ -325,7 +352,7 @@ export function Reader() {
       if (isNative) {
         const { value } = await Share.canShare();
         if (value) {
-          await Share.share({ title: shareTitle, text: 'SCP 档案库', url, dialogTitle: '分享档案' });
+          await Share.share({ title: shareTitle, text: 'SCP Archive', url, dialogTitle: '分享档案' });
           return;
         }
       }
@@ -374,6 +401,42 @@ export function Reader() {
       toast('操作失败，请稍后再试');
     } finally {
       setOfflineBusy(false);
+    }
+  };
+
+  const translateNow = async () => {
+    if (!article || translating) return;
+    if (!translationReady) {
+      toast('请先在设置中填写翻译接口与模型');
+      navigate('/settings?focus=translation');
+      return;
+    }
+    if (translationNeedsKey) {
+      toast('当前接口需要 API Key，请先在设置中填写', {
+        actionLabel: '去填写',
+        onAction: () => navigate('/settings?focus=translation'),
+      });
+      return;
+    }
+    setTranslating(true);
+    setTranslateProgress({ done: 0, total: 0 });
+    try {
+      const record = await translateArticle(article, settings.translation, (done, total) => {
+        setTranslateProgress({ done, total });
+      });
+      await writeTranslation(record);
+      setTranslation(record);
+      setShowOriginal(false);
+      toast('机器翻译完成，已缓存到本机');
+    } catch (translationError) {
+      toast(
+        translationError instanceof Error
+          ? translationError.message
+          : '翻译失败，请检查接口配置',
+        { actionLabel: '检查设置', onAction: () => navigate('/settings?focus=translation') },
+      );
+    } finally {
+      setTranslating(false);
     }
   };
 
@@ -494,29 +557,86 @@ export function Reader() {
           ) : null}
 
           {branch === 'en' ? (
-            <div className="reader-translation">
-              <Icon name="globe" size={17} />
-              <div className="reader-translation__text">
-                <strong>{cnEntry ? '本篇有中文译本' : '本篇暂无中文译本'}</strong>
-                <span>
-                  {cnEntry
-                    ? '中文分部已收录对应译文，可切换到中文阅读。'
-                    : '中文分部尚未收录对应译文，当前显示英文原文。'}
-                </span>
-              </div>
-              {cnEntry ? (
+            cnEntry ? (
+              <div className="reader-translation">
+                <Icon name="globe" size={17} />
+                <div className="reader-translation__text">
+                  <strong>本篇有中文译本</strong>
+                  <span>中文分部已收录对应译文，可切换到中文阅读。</span>
+                </div>
                 <Button
                   variant="tonal"
                   onClick={() => navigate(`/read/cn/${cnEntry.slug}`)}
                 >
                   阅读中文版
                 </Button>
-              ) : (
-                <Button variant="text" onClick={() => void openExternal(article.sourceUrl)}>
-                  查看原文
-                </Button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="reader-translation reader-translation--machine">
+                <Icon name="globe" size={17} />
+                <div className="reader-translation__text">
+                  <strong>
+                    {translation
+                      ? showOriginal
+                        ? '正在显示英文原文'
+                        : '机器翻译'
+                      : '本篇暂无中文译本'}
+                  </strong>
+                  <span>
+                    {translation
+                      ? showOriginal
+                        ? '这是供对照的英文原文，可随时切回译文。'
+                        : `由 ${translation.model} 生成 · 仅缓存在本机`
+                      : '中文分部尚未收录对应译文。可以用你自己的翻译接口生成机器译文。'}
+                  </span>
+                </div>
+                <div className="reader-translation__actions">
+                  {translation ? (
+                    <Button variant="text" onClick={() => setShowOriginal((value) => !value)}>
+                      {showOriginal ? '显示译文' : '显示原文'}
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant={translation ? 'text' : 'tonal'}
+                    disabled={translating}
+                    onClick={() =>
+                      translationNeedsKey
+                        ? navigate('/settings?focus=translation')
+                        : void translateNow()
+                    }
+                  >
+                    {translating
+                      ? '翻译中…'
+                      : translation
+                        ? '重新翻译'
+                        : translationReady
+                          ? translationNeedsKey
+                            ? '填写 API Key'
+                            : '翻译此篇'
+                          : '配置翻译接口'}
+                  </Button>
+                  <Button variant="text" onClick={() => void openExternal(article.sourceUrl)}>
+                    查看原文
+                  </Button>
+                </div>
+                {translating ? (
+                  <div className="reader-translation__progress">
+                    <LinearProgress
+                      value={
+                        translateProgress.total
+                          ? (translateProgress.done / translateProgress.total) * 100
+                          : undefined
+                      }
+                    />
+                    <span>
+                      {translateProgress.total
+                        ? `正在翻译 ${translateProgress.done} / ${translateProgress.total} 段…`
+                        : '正在准备翻译…'}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            )
           ) : null}
         </header>
 
@@ -551,7 +671,7 @@ export function Reader() {
           style={{ fontSize: `${settings.fontScale}rem`, lineHeight: settings.lineHeight }}
           onClick={handleArticleClick}
           onKeyDown={handleArticleKeyDown}
-          dangerouslySetInnerHTML={{ __html: redaction?.html ?? article.html }}
+          dangerouslySetInnerHTML={{ __html: redaction?.html ?? bodyHtml }}
         />
 
         <footer className="reader-foot">
@@ -628,7 +748,7 @@ export function Reader() {
           </div>
 
           <p className="reader-license">
-            本页内容遵循 CC BY-SA 3.0。SCP 档案库是非官方阅读器，与 SCP 基金会无隶属关系。
+            本页内容遵循 CC BY-SA 3.0。SCP Archive 是非官方阅读器，与 SCP 基金会无隶属关系。
           </p>
         </footer>
       </article>

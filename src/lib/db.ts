@@ -7,6 +7,7 @@ import type {
   ProgressRecord,
   Settings,
   SyncState,
+  TranslationRecord,
 } from './types';
 
 /**
@@ -24,6 +25,7 @@ const KEY = {
   offline: 'offline:v1',
   article: (branch: string, slug: string) => `article:v1:${branch}:${slug}`,
   progress: (branch: string, slug: string) => `progress:v1:${branch}:${slug}`,
+  translation: (branch: string, slug: string) => `translation:v1:${branch}:${slug}`,
   articlePrefix: 'article:v1:',
 } as const;
 
@@ -100,6 +102,21 @@ export async function writeProgress(record: ProgressRecord): Promise<void> {
 
 export async function removeProgress(branch: string, slug: string): Promise<void> {
   await del(KEY.progress(branch, slug), store);
+}
+
+export async function readTranslation(
+  branch: string,
+  slug: string,
+): Promise<TranslationRecord | undefined> {
+  return get<TranslationRecord>(KEY.translation(branch, slug), store);
+}
+
+export async function writeTranslation(record: TranslationRecord): Promise<void> {
+  await set(KEY.translation(record.branch, record.slug), record, store);
+}
+
+export async function removeTranslation(branch: string, slug: string): Promise<void> {
+  await del(KEY.translation(branch, slug), store);
 }
 
 export async function listArticleKeys(): Promise<string[]> {

@@ -4,6 +4,24 @@ export type ThemeMode = 'system' | 'light' | 'dark';
 
 export type Clearance = 'o5' | 'l4' | 'l3' | 'l2' | 'l1' | 'd';
 
+export type AppIcon = 'official' | 'cn';
+
+export interface TranslationConfig {
+  endpoint: string;
+  model: string;
+  apiKey: string;
+}
+
+export interface TranslationRecord {
+  branch: Branch;
+  slug: string;
+  title: string;
+  html: string;
+  model: string;
+  translatedAt: number;
+  sourceFetchedAt: number;
+}
+
 export interface Entry {
   branch: Branch;
   slug: string;
@@ -92,10 +110,12 @@ export interface OfflineRecord {
 export interface Settings {
   theme: ThemeMode;
   clearance: Clearance;
+  appIcon: AppIcon;
   fontScale: number;
   lineHeight: number;
   serif: boolean;
   branch: Branch;
+  translation: TranslationConfig;
 }
 
 export interface SyncState {

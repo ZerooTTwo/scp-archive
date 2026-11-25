@@ -298,11 +298,11 @@ export function Icon({ name, size = 24, strokeWidth = 1.8, ...rest }: IconProps)
   );
 }
 
-export function Logo({ size = 34 }: { size?: number }) {
+export function Logo({ size = 34, icon = 'official' }: { size?: number; icon?: 'official' | 'cn' }) {
   return (
     <img
       className="brand-logo"
-      src="/icons/icon-192.png"
+      src={`/icons/${icon}/icon-192.png`}
       width={size}
       height={size}
       alt=""

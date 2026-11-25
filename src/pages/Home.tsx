@@ -78,9 +78,9 @@ export function Home() {
     <div className="page home">
       <header className="home-head">
         <div className="brand">
-          <Logo size={36} />
+          <Logo size={36} icon={settings.appIcon} />
           <div className="brand__text">
-            <span className="brand__name">SCP 档案库</span>
+            <span className="brand__name">SCP Archive</span>
             <span className="brand__sub">基金会档案 · 离线阅读</span>
           </div>
         </div>
@@ -275,8 +275,8 @@ export function Home() {
 
       <footer className="home-footer">
         <div className="home-footer__brand">
-          <Logo size={24} />
-          <span>SCP 档案库 · 非官方阅读器</span>
+          <Logo size={24} icon={settings.appIcon} />
+          <span>SCP Archive · 非官方阅读器</span>
         </div>
         <p>
           目录与正文来自 SCP Wiki，内容遵循 CC BY-SA 3.0 协议。本应用与 SCP 基金会无隶属关系。

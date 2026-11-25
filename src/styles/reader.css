@@ -829,3 +829,52 @@
     margin-left: 27px;
   }
 }
+
+/* Machine translation card */
+.reader-translation--machine {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.reader-translation__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.reader-translation--machine .reader-translation__actions {
+  flex-basis: 100%;
+  justify-content: flex-start;
+  margin-left: 27px;
+}
+
+.reader-translation__actions .btn {
+  min-height: 32px;
+  padding: 0 9px;
+  font-size: 11.5px;
+}
+
+.reader-translation__progress {
+  display: grid;
+  flex-basis: 100%;
+  gap: 6px;
+  padding: 3px 0 1px 27px;
+}
+
+.reader-translation__progress .linear {
+  height: 3px;
+}
+
+.reader-translation__progress span {
+  color: var(--on-3);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+}
+
+@media (max-width: 370px) {
+  .reader-translation__actions {
+    margin-left: 0;
+  }
+}

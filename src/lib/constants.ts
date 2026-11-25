@@ -52,10 +52,16 @@ export function seriesForBranch(branch: Branch): SeriesDef[] {
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   clearance: 'l3',
+  appIcon: 'official',
   fontScale: 1,
   lineHeight: 1.9,
   serif: false,
   branch: 'cn',
+  translation: {
+    endpoint: 'https://api.deepseek.com/v1',
+    model: 'deepseek-chat',
+    apiKey: '',
+  },
 };
 
 /** Sync at most once every 12 hours unless the user asks explicitly. */

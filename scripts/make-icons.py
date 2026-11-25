@@ -1,8 +1,18 @@
-"""Generate PWA / Android icons and splash screens from the SCP-CN mark.
+"""Generate PWA / Android icons for both SCP Archive brand marks.
 
 Run from the repo root: python scripts/make-icons.py
-Requires Pillow. The source mark lives at assets/brand/scp-cn-logo.png and is
-used under CC BY-SA 3.0 (SCP Wiki CN). Outputs public/icons/ and Android res/.
+Requires Pillow.
+
+Sources (CC BY-SA 3.0, SCP Wiki):
+  assets/brand/scp-logo-official-badge.png  official SCP mark
+  assets/brand/scp-cn-logo.png              SCP-CN branch mark
+
+Outputs:
+  public/icons/                  official (default PWA / boot icon)
+  public/icons/official/         in-app official mark
+  public/icons/cn/               in-app CN mark
+  android/app/src/official/res/  official launcher + splash
+  android/app/src/cn/res/        CN launcher + splash
 """
 
 from __future__ import annotations
@@ -14,24 +24,31 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "public" / "icons"
-OUT.mkdir(parents=True, exist_ok=True)
-SOURCE = ROOT / "assets" / "brand" / "scp-cn-logo.png"
+PUBLIC_ICONS = ROOT / "public" / "icons"
 
 BG = (23, 19, 16, 255)
 PAPER = (240, 229, 215, 255)
 
+MARKS = {
+    "official": ROOT / "assets" / "brand" / "scp-logo-official-badge.png",
+    "cn": ROOT / "assets" / "brand" / "scp-cn-logo.png",
+}
 
-def _load_mark(size: int, color: tuple[int, int, int, int] = PAPER) -> Image.Image:
-    source = Image.open(SOURCE).convert("RGBA")
-    # The source is black line art on white. Turn white into transparency so the
-    # mark can be recoloured without keeping a square background.
+
+def _load_mark(source_path: Path, size: int, color=PAPER) -> Image.Image:
+    """Turn a black mark on white/transparent into a recoloured alpha shape."""
+    source = Image.open(source_path).convert("RGBA")
     ink = ImageOps.grayscale(source).point(lambda value: 255 - value)
     alpha = ImageChops.multiply(ink, source.getchannel("A"))
     bbox = alpha.getbbox()
     if bbox:
         alpha = alpha.crop(bbox)
-    alpha = alpha.resize((size, size), Image.LANCZOS)
+    # Keep the original aspect ratio; the official badge is slightly wider than tall.
+    scale = min(size / alpha.width, size / alpha.height)
+    alpha = alpha.resize(
+        (max(1, round(alpha.width * scale)), max(1, round(alpha.height * scale))),
+        Image.LANCZOS,
+    )
     solid = Image.new("RGBA", alpha.size, color)
     solid.putalpha(alpha)
     return solid
@@ -43,7 +60,7 @@ def _paste_center(canvas: Image.Image, mark: Image.Image) -> None:
     canvas.alpha_composite(mark, (left, top))
 
 
-def draw_mark(size: int, *, maskable: bool = False) -> Image.Image:
+def draw_mark(mark_name: str, size: int, *, maskable: bool = False) -> Image.Image:
     scale = 4
     canvas = size * scale
     img = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
@@ -60,20 +77,20 @@ def draw_mark(size: int, *, maskable: bool = False) -> Image.Image:
         )
         mark_ratio = 0.68
 
-    _paste_center(img, _load_mark(int(canvas * mark_ratio)))
+    _paste_center(img, _load_mark(MARKS[mark_name], int(canvas * mark_ratio)))
     return img.resize((size, size), Image.LANCZOS)
 
 
-def draw_foreground(size: int) -> Image.Image:
+def draw_foreground(mark_name: str, size: int) -> Image.Image:
     scale = 4
     canvas = size * scale
     img = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    _paste_center(img, _load_mark(int(canvas * 0.58)))
+    _paste_center(img, _load_mark(MARKS[mark_name], int(canvas * 0.58)))
     return img.resize((size, size), Image.LANCZOS)
 
 
-def draw_round(size: int) -> Image.Image:
-    mark = draw_mark(size)
+def draw_round(mark_name: str, size: int) -> Image.Image:
+    mark = draw_mark(mark_name, size)
     mask = Image.new("L", (size, size), 0)
     ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
     out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -81,18 +98,20 @@ def draw_round(size: int) -> Image.Image:
     return out
 
 
-def draw_splash(width: int, height: int) -> Image.Image:
+def draw_splash(mark_name: str, width: int, height: int) -> Image.Image:
     img = Image.new("RGB", (width, height), BG[:3])
     layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     logo_size = int(min(width, height) * 0.38)
-    logo = _load_mark(logo_size)
-    layer.alpha_composite(logo, ((width - logo_size) // 2, (height - logo_size) // 2))
+    logo = _load_mark(MARKS[mark_name], logo_size)
+    layer.alpha_composite(
+        logo, ((width - logo.width) // 2, (height - logo.height) // 2)
+    )
     out = Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB")
     return out
 
 
 def write_favicon_svg() -> None:
-    icon = draw_mark(96)
+    icon = draw_mark("official", 96)
     buffer = io.BytesIO()
     icon.save(buffer, format="PNG", optimize=True)
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
@@ -105,33 +124,31 @@ def write_favicon_svg() -> None:
     (ROOT / "public" / "favicon.svg").write_text(svg, encoding="utf-8")
 
 
-def android_icons() -> None:
-    res = ROOT / "android" / "app" / "src" / "main" / "res"
-    if not res.exists():
-        return
+def web_icons() -> None:
+    for mark_name in MARKS:
+        out = PUBLIC_ICONS if mark_name == "official" else PUBLIC_ICONS / mark_name
+        if mark_name == "official":
+            out.mkdir(parents=True, exist_ok=True)
+            (out / "official").mkdir(exist_ok=True)
+        out = PUBLIC_ICONS / mark_name
+        out.mkdir(parents=True, exist_ok=True)
+        draw_mark(mark_name, 192).save(out / "icon-192.png", optimize=True)
+        draw_mark(mark_name, 512).save(out / "icon-512.png", optimize=True)
+        draw_mark(mark_name, 512, maskable=True).save(
+            out / "icon-maskable-512.png", optimize=True
+        )
+        draw_mark(mark_name, 180).save(out / "apple-touch-icon.png", optimize=True)
 
+    # Root aliases keep PWA manifests and the pre-React boot screen working.
+    for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"):
+        (PUBLIC_ICONS / name).write_bytes((PUBLIC_ICONS / "official" / name).read_bytes())
+    draw_mark("official", 64).save(ROOT / "public" / "favicon.png", optimize=True)
+    write_favicon_svg()
+
+
+def android_icons() -> None:
     legacy = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
     adaptive = {"mdpi": 108, "hdpi": 162, "xhdpi": 216, "xxhdpi": 324, "xxxhdpi": 432}
-
-    for density, size in legacy.items():
-        folder = res / f"mipmap-{density}"
-        folder.mkdir(exist_ok=True)
-        draw_mark(size).save(folder / "ic_launcher.png", optimize=True)
-        draw_round(size).save(folder / "ic_launcher_round.png", optimize=True)
-
-    for density, size in adaptive.items():
-        folder = res / f"mipmap-{density}"
-        folder.mkdir(exist_ok=True)
-        draw_foreground(size).save(folder / "ic_launcher_foreground.png", optimize=True)
-
-    (res / "values" / "ic_launcher_background.xml").write_text(
-        '<?xml version="1.0" encoding="utf-8"?>\n'
-        "<resources>\n"
-        '    <color name="ic_launcher_background">#171310</color>\n'
-        "</resources>\n",
-        encoding="utf-8",
-    )
-
     splash_sizes = {
         "drawable": (480, 320),
         "drawable-land-mdpi": (480, 320),
@@ -145,22 +162,33 @@ def android_icons() -> None:
         "drawable-port-xxhdpi": (960, 1600),
         "drawable-port-xxxhdpi": (1280, 1920),
     }
-    for folder, (width, height) in splash_sizes.items():
-        target = res / folder
-        target.mkdir(exist_ok=True)
-        draw_splash(width, height).save(target / "splash.png", optimize=True)
+
+    for mark_name in MARKS:
+        res = ROOT / "android" / "app" / "src" / mark_name / "res"
+        if not (ROOT / "android" / "app").exists():
+            return
+        res.mkdir(parents=True, exist_ok=True)
+        for density, size in legacy.items():
+            folder = res / f"mipmap-{density}"
+            folder.mkdir(parents=True, exist_ok=True)
+            draw_mark(mark_name, size).save(folder / "ic_launcher.png", optimize=True)
+            draw_round(mark_name, size).save(folder / "ic_launcher_round.png", optimize=True)
+        for density, size in adaptive.items():
+            folder = res / f"mipmap-{density}"
+            folder.mkdir(parents=True, exist_ok=True)
+            draw_foreground(mark_name, size).save(
+                folder / "ic_launcher_foreground.png", optimize=True
+            )
+        for folder, (width, height) in splash_sizes.items():
+            target = res / folder
+            target.mkdir(parents=True, exist_ok=True)
+            draw_splash(mark_name, width, height).save(target / "splash.png", optimize=True)
 
 
 def main() -> None:
-    draw_mark(192).save(OUT / "icon-192.png", optimize=True)
-    draw_mark(512).save(OUT / "icon-512.png", optimize=True)
-    draw_mark(512, maskable=True).save(OUT / "icon-maskable-512.png", optimize=True)
-    draw_mark(180).save(OUT / "apple-touch-icon.png", optimize=True)
-
-    draw_mark(64).save(ROOT / "public" / "favicon.png", optimize=True)
-    write_favicon_svg()
+    web_icons()
     android_icons()
-    print("icons written to", OUT)
+    print("icons written for", ", ".join(MARKS))
 
 
 if __name__ == "__main__":

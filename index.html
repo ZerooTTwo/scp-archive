@@ -15,7 +15,8 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <script>
-      // Paint the correct theme before React boots (settings are mirrored to localStorage).
+      // Paint the correct theme and clearance before React boots
+      // (settings are mirrored to localStorage).
       try {
         var stored = localStorage.getItem('scp-theme');
         var resolved =
@@ -27,6 +28,14 @@
         document.documentElement.dataset.theme = resolved;
       } catch (error) {
         document.documentElement.dataset.theme = 'light';
+      }
+      try {
+        var clearance = localStorage.getItem('scp-clearance');
+        var allowed = ['o5', 'l4', 'l3', 'l2', 'l1', 'd'];
+        document.documentElement.dataset.clearance =
+          allowed.indexOf(clearance) >= 0 ? clearance : 'l3';
+      } catch (error) {
+        document.documentElement.dataset.clearance = 'l3';
       }
     </script>
     <style>
@@ -47,15 +56,11 @@
         font-family: ui-monospace, 'SF Mono', Consolas, monospace;
       }
       .boot-mark {
-        display: grid;
-        place-items: center;
+        display: block;
         width: 74px;
         height: 74px;
-        border: 1px solid #6f6257;
         border-radius: 20px;
-        font-size: 20px;
-        letter-spacing: 0.14em;
-        color: #e7b3a8;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       }
       .boot-text {
         font-size: 10px;
@@ -94,8 +99,8 @@
   <body>
     <div id="root">
       <div class="boot">
-        <div class="boot-mark">SCP</div>
-        <div class="boot-text">FOUNDATION ARCHIVE</div>
+        <img class="boot-mark" src="/icons/icon-192.png" alt="" width="74" height="74" />
+        <div class="boot-text">SCP FOUNDATION · CN ARCHIVE</div>
         <div class="boot-bar"><i></i></div>
       </div>
     </div>

@@ -11,6 +11,12 @@ import {
   TopBar,
 } from '../components/ui';
 import {
+  CLEARANCE_ORDER,
+  CLEARANCES,
+  clearanceRank,
+  taskforceAccess,
+} from '../lib/clearance';
+import {
   DEFAULT_SETTINGS,
   REPO_URL,
   WIKI_LICENSE_URL,
@@ -50,7 +56,7 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const online = useOnlineStatus();
-  const { settings, update, setTheme, setBranch } = useSettings();
+  const { settings, update, setTheme, setClearance, setBranch } = useSettings();
   const { total, syncing, progress, lastSync, syncNow } = useCatalog();
   const {
     favorites,
@@ -63,6 +69,9 @@ export function SettingsPage() {
   const [confirm, setConfirm] = useState<'history' | 'offline' | 'all' | null>(null);
 
   const offlineBytes = offline.reduce((sum, item) => sum + item.bytes, 0);
+  const currentClearance = CLEARANCES[settings.clearance];
+  const tfAccess = taskforceAccess(settings.clearance);
+  const archiveAccess = clearanceRank(settings.clearance) >= 4 ? '完整正文' : '按等级脱敏';
 
   const goBack = () => {
     if (window.history.length > 1) navigate(-1);
@@ -71,7 +80,74 @@ export function SettingsPage() {
 
   return (
     <div className="page settings-page">
-      <TopBar title="设置" subtitle="外观、数据与关于" onBack={goBack} />
+      <TopBar title="设置" subtitle="权限、外观与数据" onBack={goBack} />
+
+      <section className="settings-group settings-group--clearance" id="clearance">
+        <h2 className="settings-group__title">
+          人员等级 <span className="settings-group__aside">权限模拟</span>
+        </h2>
+        <div className="clearance-card">
+          <div className="clearance-current">
+            <span className={`clearance-seal clearance-seal--${currentClearance.id}`}>
+              {currentClearance.badge}
+            </span>
+            <div className="clearance-current__text">
+              <span className="clearance-current__eyebrow">CURRENT CREDENTIAL</span>
+              <strong>{currentClearance.name}</strong>
+              <p>{currentClearance.description}</p>
+            </div>
+          </div>
+
+          <div className="clearance-traits" aria-label="当前权限范围">
+            <span className="clearance-trait">
+              <Icon name="folder" size={13} /> 档案库 · {archiveAccess}
+            </span>
+            <span className={`clearance-trait${tfAccess === 'none' ? ' is-locked' : ''}`}>
+              <Icon name={tfAccess === 'none' ? 'lock' : 'shield'} size={13} />
+              特遣队 · {tfAccess === 'full' ? '完整' : tfAccess === 'roster' ? '仅名录' : '锁定'}
+            </span>
+            <span className="clearance-trait">
+              <Icon name="eye" size={13} /> 脱敏 · {currentClearance.badge} 级
+            </span>
+          </div>
+
+          <div className="clearance-options" role="radiogroup" aria-label="选择人员等级">
+            {CLEARANCE_ORDER.map((id) => {
+              const item = CLEARANCES[id];
+              const selected = id === settings.clearance;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  className={`clearance-option${selected ? ' is-selected' : ''}`}
+                  onClick={() => {
+                    setClearance(id);
+                    toast(`权限已切换为 ${item.name}`);
+                  }}
+                >
+                  <span className={`clearance-option__badge clearance-seal--${id}`}>
+                    {item.badge}
+                  </span>
+                  <span className="clearance-option__text">
+                    <strong>{item.name}</strong>
+                    <small>{item.scope}</small>
+                  </span>
+                  <span className="clearance-option__check" aria-hidden="true">
+                    {selected ? <Icon name="check" size={17} /> : null}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="clearance-note">
+            <Icon name="info" size={13} />
+            这是阅读氛围设定：切换后配色、栏目与正文脱敏会立刻改变，不构成真实访问控制。
+          </p>
+        </div>
+      </section>
 
       <section className="settings-group">
         <h2 className="settings-group__title">外观</h2>
@@ -243,7 +319,7 @@ export function SettingsPage() {
       <section className="settings-group">
         <h2 className="settings-group__title">关于</h2>
         <div className="settings-card">
-          <SettingRow title="SCP Archive" description="版本 0.1.1 · Capacitor + React">
+          <SettingRow title="SCP Archive" description="版本 0.2.0 · Capacitor + React">
             <Button variant="text" onClick={() => update(DEFAULT_SETTINGS)}>
               恢复默认
             </Button>

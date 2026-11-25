@@ -12,6 +12,9 @@ SCP Archive 是一个非官方的开源阅读器，面向手机屏幕设计。�
   <img src="docs/screenshots/browse.png" width="260" alt="档案库" />
   <img src="docs/screenshots/settings.png" width="260" alt="设置" />
 </p>
+<p align="center">
+  <img src="docs/screenshots/taskforces.png" width="260" alt="机动特遣队" />
+</p>
 
 ## 下载
 
@@ -27,6 +30,8 @@ SCP Archive 是一个非官方的开源阅读器，面向手机屏幕设计。�
 - **收藏与进度**：收藏、阅读历史、段落进度全部保存在本机，不上传服务器。
 - **阅读体验**：目录（TOC）、字号/行高/衬线调节、浅色/深色/跟随系统、可折叠段落、表格横向滚动、图片与脚注。
 - **自动同步**：启动或回到前台时，如果距上次同步超过 12 小时，会静默检查 25 个系列页；新条目会在列表中标记为 `NEW`。
+- **人员等级**：设置页最上方可在 O5、4、3、2、1、D 级六档之间切换；全站主色、深色档案头、底栏栏目与正文脱敏程度会随之变化。
+- **机动特遣队**：O5 / 4 级可查看完整行动记录、装备与人员状态；3 级只能查看单位名录；1 级与 D 级无访问权限，底栏入口也会隐藏。
 - **PWA + Android**：浏览器里可作为 PWA 安装；Android 端使用 Capacitor 打包，可直接安装 APK。
 - **分享**：调用系统分享面板分享档案链接，失败时回退到复制链接。
 
@@ -110,8 +115,9 @@ npm run seed
 ```text
 src/
   components/       通用 UI（按钮、Sheet、Dialog、图标、条目行、底栏）
-  pages/            首页、档案库、搜索、收藏、阅读器、设置
-  lib/              Wiki 抓取/解析、清洗、IndexedDB、同步、格式化
+  data/             机动特遣队名录
+  pages/            首页、档案库、搜索、收藏、阅读器、设置、特遣队
+  lib/              Wiki 抓取/解析、清洗、IndexedDB、同步、权限与脱敏、格式化
   state/            设置、Toast、目录、收藏/历史/离线状态
   styles/           Material 3 token、基础样式、组件、页面、阅读器排版
 public/
@@ -129,12 +135,14 @@ android/            Capacitor Android 工程
 - 图片不保证离线；正文内图片仍需要网络。
 - 只覆盖中文分部 001–4999 与英文总部 001–9999 的系列页；未收录的分部/页面不会出现在目录中。
 - 没有账号系统，收藏与进度不会跨设备同步。
+- 人员等级只是阅读氛围与界面模拟，不构成真实访问控制；它不会改变 Wiki 上的公开内容。
 - CI 目前只产出 **debug APK**；发布正式版需要自行配置签名。
 
 ## 许可与声明
 
 - **代码**：MIT，见 [LICENSE](LICENSE)。
 - **SCP Wiki 内容**：来自 [SCP Foundation Wiki](https://scp-wiki.wikidot.com/) 与 [SCP 中文分部](https://scp-wiki-cn.wikidot.com/)，除另有注明外遵循 [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)。
-- 本项目是非官方粉丝项目，与 SCP 基金会无隶属关系，不使用官方 SCP 标志。SCP 名称及相关内容归各自作者所有。
+- **图标**：App 图标使用 SCP 中文分部“中分标志”，源文件来自 [SCP 中文分部图形模板](https://o5command-int.wdfiles.com/local--files/tech-team:graphic-templates/scp-logo-cn-400.png)，同样按 CC BY-SA 3.0 使用；标志版权归 SCP 中文分部及原作者所有。
+- 本项目是非官方粉丝项目，与 SCP 基金会无隶属关系。SCP 名称及相关内容归各自作者所有。
 
 如果喜欢这个项目，欢迎提交 Issue 或 PR；请不要把 Wiki 正文重新打包进本仓库。

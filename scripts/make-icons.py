@@ -1,56 +1,46 @@
-"""Generate the SCP Archive launcher icons and splash screens.
+"""Generate PWA / Android icons and splash screens from the SCP-CN mark.
 
 Run from the repo root: python scripts/make-icons.py
-Requires Pillow. Outputs PWA icons into public/icons/ and Android resources
-into android/app/src/main/res/.
+Requires Pillow. The source mark lives at assets/brand/scp-cn-logo.png and is
+used under CC BY-SA 3.0 (SCP Wiki CN). Outputs public/icons/ and Android res/.
 """
 
+from __future__ import annotations
+
+import base64
+import io
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "icons"
 OUT.mkdir(parents=True, exist_ok=True)
+SOURCE = ROOT / "assets" / "brand" / "scp-cn-logo.png"
 
 BG = (23, 19, 16, 255)
 PAPER = (240, 229, 215, 255)
-PAPER_DIM = (176, 161, 146, 255)
-ACCENT = (224, 106, 85, 255)
 
 
-def _draw_archive(d: ImageDraw.ImageDraw, canvas: int, *, scale: float = 0.63) -> None:
-    mark = canvas * scale
-    left = (canvas - mark) / 2
-    top = (canvas - mark) / 2
-    right = left + mark
-    bottom = top + mark
-    stroke = max(2, int(mark * 0.055))
+def _load_mark(size: int, color: tuple[int, int, int, int] = PAPER) -> Image.Image:
+    source = Image.open(SOURCE).convert("RGBA")
+    # The source is black line art on white. Turn white into transparency so the
+    # mark can be recoloured without keeping a square background.
+    ink = ImageOps.grayscale(source).point(lambda value: 255 - value)
+    alpha = ImageChops.multiply(ink, source.getchannel("A"))
+    bbox = alpha.getbbox()
+    if bbox:
+        alpha = alpha.crop(bbox)
+    alpha = alpha.resize((size, size), Image.LANCZOS)
+    solid = Image.new("RGBA", alpha.size, color)
+    solid.putalpha(alpha)
+    return solid
 
-    d.rounded_rectangle(
-        [left, top, right, bottom],
-        radius=int(mark * 0.2),
-        outline=PAPER,
-        width=stroke,
-    )
 
-    inset = mark * 0.18
-    line_left = left + inset
-    line_right = right - inset
-    ys = [top + mark * 0.33, top + mark * 0.5, top + mark * 0.67]
-    widths = [1.0, 0.88, 0.72]
-    for y, width in zip(ys, widths):
-        d.rounded_rectangle(
-            [line_left, y - stroke * 0.42, line_left + (line_right - line_left) * width, y + stroke * 0.42],
-            radius=stroke * 0.42,
-            fill=PAPER,
-        )
-
-    dot_r = mark * 0.042
-    d.ellipse(
-        [right - inset - dot_r * 2, ys[-1] - dot_r, right - inset, ys[-1] + dot_r],
-        fill=ACCENT,
-    )
+def _paste_center(canvas: Image.Image, mark: Image.Image) -> None:
+    left = (canvas.width - mark.width) // 2
+    top = (canvas.height - mark.height) // 2
+    canvas.alpha_composite(mark, (left, top))
 
 
 def draw_mark(size: int, *, maskable: bool = False) -> Image.Image:
@@ -59,17 +49,18 @@ def draw_mark(size: int, *, maskable: bool = False) -> Image.Image:
     img = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
-    # Full-bleed ground. Maskable icons keep the mark well inside the safe zone.
     if maskable:
         d.rectangle([0, 0, canvas - 1, canvas - 1], fill=BG)
+        mark_ratio = 0.54
     else:
         d.rounded_rectangle(
             [0, 0, canvas - 1, canvas - 1],
             radius=int(canvas * 0.225),
             fill=BG,
         )
+        mark_ratio = 0.68
 
-    _draw_archive(d, canvas, scale=0.55 if maskable else 0.63)
+    _paste_center(img, _load_mark(int(canvas * mark_ratio)))
     return img.resize((size, size), Image.LANCZOS)
 
 
@@ -77,7 +68,7 @@ def draw_foreground(size: int) -> Image.Image:
     scale = 4
     canvas = size * scale
     img = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    _draw_archive(ImageDraw.Draw(img), canvas, scale=0.58)
+    _paste_center(img, _load_mark(int(canvas * 0.58)))
     return img.resize((size, size), Image.LANCZOS)
 
 
@@ -92,13 +83,26 @@ def draw_round(size: int) -> Image.Image:
 
 def draw_splash(width: int, height: int) -> Image.Image:
     img = Image.new("RGB", (width, height), BG[:3])
-    logo_size = int(min(width, height) * 0.4)
-    scale = 4
-    logo = Image.new("RGBA", (logo_size * scale, logo_size * scale), (0, 0, 0, 0))
-    _draw_archive(ImageDraw.Draw(logo), logo_size * scale, scale=0.82)
-    logo = logo.resize((logo_size, logo_size), Image.LANCZOS)
-    img.paste(logo, ((width - logo_size) // 2, (height - logo_size) // 2), logo)
-    return img
+    layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    logo_size = int(min(width, height) * 0.38)
+    logo = _load_mark(logo_size)
+    layer.alpha_composite(logo, ((width - logo_size) // 2, (height - logo_size) // 2))
+    out = Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB")
+    return out
+
+
+def write_favicon_svg() -> None:
+    icon = draw_mark(96)
+    buffer = io.BytesIO()
+    icon.save(buffer, format="PNG", optimize=True)
+    encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">'
+        '<rect width="96" height="96" rx="22" fill="#171310"/>'
+        f'<image href="data:image/png;base64,{encoded}" width="96" height="96"/>'
+        "</svg>\n"
+    )
+    (ROOT / "public" / "favicon.svg").write_text(svg, encoding="utf-8")
 
 
 def android_icons() -> None:
@@ -120,7 +124,6 @@ def android_icons() -> None:
         folder.mkdir(exist_ok=True)
         draw_foreground(size).save(folder / "ic_launcher_foreground.png", optimize=True)
 
-    # Android's adaptive icon background.
     (res / "values" / "ic_launcher_background.xml").write_text(
         '<?xml version="1.0" encoding="utf-8"?>\n'
         "<resources>\n"
@@ -154,8 +157,8 @@ def main() -> None:
     draw_mark(512, maskable=True).save(OUT / "icon-maskable-512.png", optimize=True)
     draw_mark(180).save(OUT / "apple-touch-icon.png", optimize=True)
 
-    # A small opaque favicon fallback for very old browsers.
     draw_mark(64).save(ROOT / "public" / "favicon.png", optimize=True)
+    write_favicon_svg()
     android_icons()
     print("icons written to", OUT)
 

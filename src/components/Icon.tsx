@@ -202,6 +202,13 @@ const PATHS = {
       <circle cx="12" cy="12" r="2.8" />
     </>
   ),
+  lock: (
+    <>
+      <rect x="5" y="10.5" width="14" height="10" rx="2.2" />
+      <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+      <circle cx="12" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
+    </>
+  ),
   shield: (
     <>
       <path d="M12 3 20 6v5.5c0 5-3.4 8.2-8 9.5-4.6-1.3-8-4.5-8-9.5V6z" />
@@ -293,20 +300,14 @@ export function Icon({ name, size = 24, strokeWidth = 1.8, ...rest }: IconProps)
 
 export function Logo({ size = 34 }: { size?: number }) {
   return (
-    <svg
+    <img
       className="brand-logo"
+      src="/icons/icon-192.png"
       width={size}
       height={size}
-      viewBox="0 0 40 40"
-      fill="none"
+      alt=""
       aria-hidden="true"
-    >
-      <rect x="1.25" y="1.25" width="37.5" height="37.5" rx="11" stroke="currentColor" strokeWidth="1.6" opacity="0.55" />
-      <path d="M10 13.5h20" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M10 20h8" stroke="var(--primary)" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M22 20h8" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" opacity="0.4" />
-      <path d="M10 26.5h20" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" opacity="0.75" />
-      <circle cx="30" cy="10" r="2.2" fill="var(--primary)" />
-    </svg>
+      draggable={false}
+    />
   );
 }

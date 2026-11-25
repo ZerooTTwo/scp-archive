@@ -149,3 +149,113 @@
   --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.55);
   --shadow-fab: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
+
+/* ── Clearance palettes ────────────────────────────────────────────────────
+   The clearance picker is a reading-mode device, not a security boundary.
+   Each level re-tints the primary role and the dark hero without changing
+   the paper/ink neutrals that keep long-form reading comfortable. */
+
+:root[data-clearance='o5'] {
+  --primary: #21456e;
+  --on-primary: #ffffff;
+  --primary-container: #d6e4f7;
+  --on-primary-container: #071a2f;
+  --primary-soft: #e9f1fb;
+  --hero-bg: #0a1521;
+  --hero-line: rgba(169, 199, 255, 0.18);
+}
+
+:root[data-theme='dark'][data-clearance='o5'] {
+  --primary: #a9c7ff;
+  --on-primary: #0b2b4f;
+  --primary-container: #16395f;
+  --on-primary-container: #d6e4f7;
+  --primary-soft: #142538;
+  --hero-bg: #07111c;
+  --hero-line: rgba(169, 199, 255, 0.16);
+}
+
+:root[data-clearance='l4'] {
+  --primary: #5b3f8f;
+  --on-primary: #ffffff;
+  --primary-container: #e7dcff;
+  --on-primary-container: #1c0a3a;
+  --primary-soft: #f0e9fb;
+  --hero-bg: #171122;
+  --hero-line: rgba(211, 188, 255, 0.18);
+}
+
+:root[data-theme='dark'][data-clearance='l4'] {
+  --primary: #d3bcff;
+  --on-primary: #2c0f57;
+  --primary-container: #43286e;
+  --on-primary-container: #ede0ff;
+  --primary-soft: #261a38;
+  --hero-bg: #120d1a;
+  --hero-line: rgba(211, 188, 255, 0.16);
+}
+
+:root[data-clearance='l2'] {
+  --primary: #2b6d61;
+  --on-primary: #ffffff;
+  --primary-container: #cdece3;
+  --on-primary-container: #06231d;
+  --primary-soft: #e3f3ef;
+  --hero-bg: #0c1c19;
+  --hero-line: rgba(142, 216, 200, 0.18);
+}
+
+:root[data-theme='dark'][data-clearance='l2'] {
+  --primary: #8ed8c8;
+  --on-primary: #063b32;
+  --primary-container: #1d5147;
+  --on-primary-container: #cdece3;
+  --primary-soft: #172b27;
+  --hero-bg: #091714;
+  --hero-line: rgba(142, 216, 200, 0.16);
+}
+
+:root[data-clearance='l1'] {
+  --primary: #7d5a16;
+  --on-primary: #ffffff;
+  --primary-container: #f6e2b8;
+  --on-primary-container: #2a1d00;
+  --primary-soft: #f7eed6;
+  --hero-bg: #1d170b;
+  --hero-line: rgba(232, 192, 122, 0.18);
+}
+
+:root[data-theme='dark'][data-clearance='l1'] {
+  --primary: #e8c07a;
+  --on-primary: #412d00;
+  --primary-container: #5a4110;
+  --on-primary-container: #f6e2b8;
+  --primary-soft: #2c2415;
+  --hero-bg: #171106;
+  --hero-line: rgba(232, 192, 122, 0.16);
+}
+
+:root[data-clearance='d'] {
+  --primary: #a34a12;
+  --on-primary: #ffffff;
+  --primary-container: #ffdcc7;
+  --on-primary-container: #351000;
+  --primary-soft: #fbe8dc;
+  --hero-bg: #1e120b;
+  --hero-line: rgba(255, 183, 122, 0.18);
+}
+
+:root[data-theme='dark'][data-clearance='d'] {
+  --primary: #ffb77a;
+  --on-primary: #522300;
+  --primary-container: #743410;
+  --on-primary-container: #ffdcc7;
+  --primary-soft: #332015;
+  --hero-bg: #170e08;
+  --hero-line: rgba(255, 183, 122, 0.16);
+}
+
+:root[data-clearance] {
+  --state-selected: color-mix(in srgb, var(--primary) 13%, transparent);
+  --glow: color-mix(in srgb, var(--primary) 12%, transparent);
+}

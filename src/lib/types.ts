@@ -2,6 +2,8 @@ export type Branch = 'cn' | 'en';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 
+export type Clearance = 'o5' | 'l4' | 'l3' | 'l2' | 'l1' | 'd';
+
 export interface Entry {
   branch: Branch;
   slug: string;
@@ -89,6 +91,7 @@ export interface OfflineRecord {
 
 export interface Settings {
   theme: ThemeMode;
+  clearance: Clearance;
   fontScale: number;
   lineHeight: number;
   serif: boolean;

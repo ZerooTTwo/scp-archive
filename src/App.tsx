@@ -10,8 +10,9 @@ import { NotFound } from './pages/NotFound';
 import { Reader } from './pages/Reader';
 import { Search } from './pages/Search';
 import { SettingsPage } from './pages/Settings';
+import { Taskforces } from './pages/Taskforces';
 
-const TAB_PATHS = new Set(['/', '/browse', '/search', '/library']);
+const TAB_PATHS = new Set(['/', '/browse', '/search', '/library', '/taskforces']);
 
 function Shell() {
   const location = useLocation();
@@ -37,6 +38,7 @@ function Shell() {
           <Route path="/browse" element={<Browse />} />
           <Route path="/search" element={<Search />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/taskforces" element={<Taskforces />} />
           <Route path="/read/:branch/:slug" element={<Reader />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route

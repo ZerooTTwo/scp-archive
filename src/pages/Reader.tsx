@@ -22,6 +22,11 @@ import {
 } from '../components/ui';
 import { findEntry } from '../lib/catalog';
 import {
+  articleSecurity,
+  CLEARANCES,
+  redactArticleHtml,
+} from '../lib/clearance';
+import {
   ARTICLE_TTL_MS,
   BRANCH_LABEL,
   SERIES_BY_ID,
@@ -85,6 +90,16 @@ export function Reader() {
   const displayTitle = article ? entry?.title?.trim() || article.title : '';
   const tagList = article ? article.tags.filter((tag) => !tag.startsWith('_')) : [];
   const shownTags = allTags ? tagList : tagList.slice(0, 7);
+  const security = useMemo(() => (article ? articleSecurity(article) : null), [article]);
+  const redaction = useMemo(() => {
+    if (!article || !security) return null;
+    return redactArticleHtml(
+      article.html,
+      settings.clearance,
+      security.required,
+      security.reason,
+    );
+  }, [article, security, settings.clearance]);
   useDocumentTitle(article ? `${article.code} · ${displayTitle}` : '阅读');
   const series = entry ? SERIES_BY_ID.get(entry.seriesId) : undefined;
   const favorite = isFavorite(branch, slug);
@@ -473,13 +488,30 @@ export function Reader() {
           </button>
         ) : null}
 
+        {security && redaction && redaction.redacted > 0 ? (
+          <div className="reader-redaction" role="note">
+            <span className="reader-redaction__seal">
+              <Icon name="lock" size={17} />
+            </span>
+            <div>
+              <strong>
+                档案已按 {CLEARANCES[security.required].badge} 级权限脱敏
+              </strong>
+              <span>
+                {security.reason} · 当前 {CLEARANCES[settings.clearance].badge} 级
+                {redaction.total > 0 ? ` · ${redaction.redacted} 处文字已遮盖` : ''}
+              </span>
+            </div>
+          </div>
+        ) : null}
+
         <div
           ref={bodyRef}
           className={`reader-body${settings.serif ? ' reader-body--serif' : ''}`}
           style={{ fontSize: `${settings.fontScale}rem`, lineHeight: settings.lineHeight }}
           onClick={handleArticleClick}
           onKeyDown={handleArticleKeyDown}
-          dangerouslySetInnerHTML={{ __html: article.html }}
+          dangerouslySetInnerHTML={{ __html: redaction?.html ?? article.html }}
         />
 
         <footer className="reader-foot">

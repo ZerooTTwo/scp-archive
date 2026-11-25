@@ -716,3 +716,64 @@
     max-width: 150px;
   }
 }
+
+/* ── Clearance redaction ─────────────────────────────────────────────────── */
+
+.redaction {
+  display: inline;
+  padding: 0 0.14em;
+  border: 1px solid color-mix(in srgb, var(--on) 24%, transparent);
+  border-radius: 2px;
+  background: repeating-linear-gradient(135deg, #101010 0 3px, #1b1b1b 3px 6px);
+  color: transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  cursor: help;
+  user-select: none;
+}
+
+.redaction::selection {
+  background: var(--on);
+  color: var(--on);
+}
+
+.reader-redaction {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin: 0 0 18px;
+  padding: 12px 13px;
+  border: 1px solid color-mix(in srgb, var(--primary) 32%, var(--outline-variant));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+}
+
+.reader-redaction__seal {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 31px;
+  height: 31px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  color: var(--primary);
+}
+
+.reader-redaction div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.reader-redaction strong {
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.reader-redaction span {
+  color: var(--on-3);
+  font-size: 10.5px;
+  line-height: 1.55;
+}

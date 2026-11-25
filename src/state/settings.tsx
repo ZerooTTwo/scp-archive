@@ -8,9 +8,10 @@ import {
   type ReactNode,
 } from 'react';
 import { DEFAULT_SETTINGS } from '../lib/constants';
+import { isClearance } from '../lib/clearance';
 import { readSettings, writeSettings } from '../lib/db';
 import { useResolvedTheme, useThemeEffect } from '../lib/hooks';
-import type { Branch, Settings, ThemeMode } from '../lib/types';
+import type { Branch, Clearance, Settings, ThemeMode } from '../lib/types';
 
 interface SettingsContextValue {
   settings: Settings;
@@ -18,6 +19,7 @@ interface SettingsContextValue {
   loaded: boolean;
   update: (patch: Partial<Settings>) => void;
   setTheme: (theme: ThemeMode) => void;
+  setClearance: (clearance: Clearance) => void;
   setBranch: (branch: Branch) => void;
 }
 
@@ -30,6 +32,7 @@ function mergeSettings(stored: Partial<Settings> | undefined): Settings {
       stored.theme === 'light' || stored.theme === 'dark' || stored.theme === 'system'
         ? stored.theme
         : DEFAULT_SETTINGS.theme,
+    clearance: isClearance(stored.clearance) ? stored.clearance : DEFAULT_SETTINGS.clearance,
     fontScale:
       typeof stored.fontScale === 'number' && stored.fontScale >= 0.8 && stored.fontScale <= 1.4
         ? stored.fontScale
@@ -48,6 +51,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const resolvedTheme = useResolvedTheme(settings.theme);
   useThemeEffect(resolvedTheme);
+
+  useEffect(() => {
+    document.documentElement.dataset.clearance = settings.clearance;
+    try {
+      localStorage.setItem('scp-clearance', settings.clearance);
+    } catch {
+      // localStorage may be unavailable; the DB copy still applies.
+    }
+  }, [settings.clearance]);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,16 +84,27 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           // localStorage may be unavailable; the DB copy still applies.
         }
       }
+      if (next.clearance !== current.clearance) {
+        try {
+          localStorage.setItem('scp-clearance', next.clearance);
+        } catch {
+          // localStorage may be unavailable; the DB copy still applies.
+        }
+      }
       return next;
     });
   }, []);
 
   const setTheme = useCallback((theme: ThemeMode) => update({ theme }), [update]);
+  const setClearance = useCallback(
+    (clearance: Clearance) => update({ clearance }),
+    [update],
+  );
   const setBranch = useCallback((branch: Branch) => update({ branch }), [update]);
 
   const value = useMemo<SettingsContextValue>(
-    () => ({ settings, resolvedTheme, loaded, update, setTheme, setBranch }),
-    [settings, resolvedTheme, loaded, update, setTheme, setBranch],
+    () => ({ settings, resolvedTheme, loaded, update, setTheme, setClearance, setBranch }),
+    [settings, resolvedTheme, loaded, update, setTheme, setClearance, setBranch],
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

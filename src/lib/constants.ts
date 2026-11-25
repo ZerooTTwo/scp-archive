@@ -51,6 +51,7 @@ export function seriesForBranch(branch: Branch): SeriesDef[] {
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
+  clearance: 'l3',
   fontScale: 1,
   lineHeight: 1.9,
   serif: false,

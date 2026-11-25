@@ -55,5 +55,5 @@ export const ARTICLE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const OFFLINE_LIMIT = 300;
 export const HISTORY_LIMIT = 80;
 
-export const REPO_URL = 'https://github.com/scp-archive/scp-archive';
+export const REPO_URL = 'https://github.com/ZerooTTwo/scp-archive';
 export const WIKI_LICENSE_URL = 'https://creativecommons.org/licenses/by-sa/3.0/';

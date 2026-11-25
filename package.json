@@ -1,0 +1,42 @@
+{
+  "name": "scp-archive",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SCP Archive — a Material 3, offline-first reader for the SCP Foundation wiki.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "seed": "node scripts/build-seed.mjs",
+    "typecheck": "tsc --noEmit",
+    "cap:sync": "npm run build && cap sync android",
+    "android": "npm run cap:sync && cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/share": "8.0.3",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.4",
+    "idb-keyval": "6.3.0",
+    "react": "19.1.10",
+    "react-dom": "19.1.10",
+    "react-router-dom": "7.18.7"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2",
+    "@types/react": "19.3.2",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.8",
+    "vite-plugin-pwa": "1.3.0"
+  }
+}

@@ -1,0 +1,151 @@
+/* SCP Archive — design tokens
+   A warm, archival Material 3 palette: paper, ink, oxide red, olive. */
+
+:root {
+  color-scheme: light;
+
+  --bg: #efe9dd;
+  --bg-deep: #e5ddcf;
+  --surface: #fbf8f1;
+  --surface-2: #f2ecdf;
+  --surface-3: #e8dfcf;
+  --surface-inverse: #241d18;
+
+  --on: #211b16;
+  --on-2: #5e5548;
+  --on-3: #8a7e6e;
+  --on-inverse: #f6eddf;
+
+  --outline: #9b8f7f;
+  --outline-variant: #d8cebe;
+
+  --primary: #8f2f21;
+  --on-primary: #ffffff;
+  --primary-container: #ffd9d2;
+  --on-primary-container: #3d0803;
+  --primary-soft: #f6e2dc;
+
+  --secondary: #5f5b45;
+  --on-secondary: #ffffff;
+  --secondary-container: #e7e1c7;
+  --on-secondary-container: #1e1c0e;
+
+  --tertiary: #3f5b52;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #c7e7db;
+  --on-tertiary-container: #062019;
+
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #f9dedc;
+  --on-error-container: #410e0b;
+  --success: #3f6b4f;
+  --warning: #8a5a12;
+  --warning-container: #f6e3bd;
+
+  --scrim: rgba(20, 14, 10, 0.54);
+  --nav-bg: rgba(251, 248, 241, 0.9);
+  --topbar-bg: rgba(239, 233, 221, 0.985);
+
+  --state-hover: rgba(33, 27, 22, 0.055);
+  --state-press: rgba(33, 27, 22, 0.11);
+  --state-selected: rgba(143, 47, 33, 0.1);
+
+  --grid: rgba(94, 74, 54, 0.07);
+  --glow: rgba(143, 47, 33, 0.12);
+  --hero-bg: #1d1613;
+  --hero-fg: #f4e9da;
+  --hero-muted: #cbbba6;
+  --hero-line: rgba(244, 233, 218, 0.13);
+
+  --shadow-1: 0 1px 2px rgba(45, 31, 20, 0.07), 0 1px 3px rgba(45, 31, 20, 0.06);
+  --shadow-2: 0 3px 8px rgba(45, 31, 20, 0.09), 0 1px 3px rgba(45, 31, 20, 0.06);
+  --shadow-3: 0 12px 32px rgba(45, 31, 20, 0.16), 0 3px 8px rgba(45, 31, 20, 0.08);
+  --shadow-fab: 0 6px 16px rgba(90, 28, 18, 0.28), 0 2px 6px rgba(45, 31, 20, 0.16);
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-reading: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "Noto Serif SC",
+    "Songti SC", "SimSun", Georgia, "Times New Roman", serif;
+  --font-mono: "SFMono-Regular", "JetBrains Mono", "Cascadia Code", Consolas,
+    "Liberation Mono", monospace;
+
+  --app-max: 620px;
+  --nav-height: 64px;
+  --topbar-height: 56px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1.2);
+  --duration: 180ms;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #12100e;
+  --bg-deep: #0b0908;
+  --surface: #1c1815;
+  --surface-2: #251f1b;
+  --surface-3: #312a24;
+  --surface-inverse: #eee3d4;
+
+  --on: #eee3d4;
+  --on-2: #c8baa8;
+  --on-3: #9b8d7c;
+  --on-inverse: #241d18;
+
+  --outline: #8f8170;
+  --outline-variant: #3b332c;
+
+  --primary: #ffb4a5;
+  --on-primary: #561208;
+  --primary-container: #7a2418;
+  --on-primary-container: #ffdad3;
+  --primary-soft: #3a1c16;
+
+  --secondary: #cec8ab;
+  --on-secondary: #2f2c1d;
+  --secondary-container: #3c3929;
+  --on-secondary-container: #eae5c9;
+
+  --tertiary: #a9cec0;
+  --on-tertiary: #12352b;
+  --tertiary-container: #27453c;
+  --on-tertiary-container: #c6e7db;
+
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #5c1512;
+  --on-error-container: #ffdad6;
+  --success: #9ed3ae;
+  --warning: #e8c07a;
+  --warning-container: #3f2f12;
+
+  --scrim: rgba(0, 0, 0, 0.64);
+  --nav-bg: rgba(28, 24, 21, 0.9);
+  --topbar-bg: rgba(18, 16, 14, 0.985);
+
+  --state-hover: rgba(238, 227, 212, 0.06);
+  --state-press: rgba(238, 227, 212, 0.12);
+  --state-selected: rgba(255, 180, 165, 0.12);
+
+  --grid: rgba(238, 227, 212, 0.045);
+  --glow: rgba(255, 180, 165, 0.08);
+  --hero-bg: #1a1411;
+  --hero-fg: #f4e9da;
+  --hero-muted: #c2b19c;
+  --hero-line: rgba(244, 233, 218, 0.12);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.42);
+  --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --shadow-fab: 0 6px 18px rgba(0, 0, 0, 0.5);
+}

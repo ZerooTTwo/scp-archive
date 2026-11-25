@@ -1,4 +1,4 @@
-# SCP Archive
+# SCP 档案库 / SCP Archive
 
 > 一个 Material 3、离线优先的 SCP 基金会档案阅读器。
 
@@ -15,24 +15,28 @@ SCP Archive 是一个非官方的开源阅读器，面向手机屏幕设计。�
 <p align="center">
   <img src="docs/screenshots/taskforces.png" width="260" alt="机动特遣队" />
 </p>
+<p align="center">
+  <img src="docs/screenshots/landscape-home.png" width="520" alt="横屏首页，底栏侧置" />
+</p>
 
 ## 下载
 
-- **Android APK**：[最新 Release](https://github.com/ZerooTTwo/scp-archive/releases/latest)（debug 签名，安装时需允许未知来源）
+- **Android APK**：[最新 Release](https://github.com/ZerooTTwo/scp-archive/releases/latest)（release 签名，安装时仍需允许未知来源）
 - **Web / PWA**：`npm run build` 后部署 `dist/`，或本地 `npm run dev`
 
 ## 功能
 
 - **全量目录**：内置 25 个系列页的快照，共 22,072 条档案（中文 12,220 条 + 英文 9,852 条），按系列与编号归档。
 - **中文译本 + 原创**：中文分部同时收录 SCP-001 – 9999 的中文译文与 SCP-CN-001 – 4999 的中文原创，译文和原创分卷浏览，不再只显示英文原文。
-- **浏览与检索**：分部切换、系列筛选、编号/标题搜索、只看新增、随机档案。
+- **浏览与检索**：分部切换、系列筛选、编号/标题搜索、只看新增、随机档案；系列内滚动到列表底部才加载下一批，不再一次性渲染整卷。
 - **离线阅读**：打开过的正文自动写入本地；收藏时主动下载正文；最多保留 300 篇正文。
 - **收藏与进度**：收藏、阅读历史、段落进度全部保存在本机，不上传服务器。
-- **阅读体验**：目录（TOC）、字号/行高/衬线调节、浅色/深色/跟随系统、可折叠段落、表格横向滚动、图片与脚注。
-- **自动同步**：启动或回到前台时，如果距上次同步超过 12 小时，会静默检查 25 个系列页；新条目会在列表中标记为 `NEW`。
+- **阅读体验**：目录（TOC）、字号/行高/衬线调节、浅色/深色/跟随系统、可折叠段落、表格横向滚动、图片与脚注；正文外链交给系统浏览器打开。
+- **自动同步**：启动或回到前台时，如果距上次同步超过 12 小时，会静默检查 25 个系列页；新条目会在列表中标记为 `新`。
 - **人员等级**：设置页最上方可在 O5、4、3、2、1、D 级六档之间切换；全站主色、深色档案头、底栏栏目与正文脱敏程度会随之变化。
 - **机动特遣队**：O5 / 4 级可查看完整行动记录、装备与人员状态；3 级只能查看单位名录；1 级与 D 级无访问权限，底栏入口也会隐藏。
-- **PWA + Android**：浏览器里可作为 PWA 安装；Android 端使用 Capacitor 打包，可直接安装 APK。
+- **PWA + Android**：浏览器里可作为 PWA 安装；Android 端使用 Capacitor 打包，可直接安装 APK；横屏时底栏变为左侧导航栏。
+- **中文界面**：应用壳、权限、特遣队与常用标签均已中文化；英文原文条目会提示是否有中文译本，并提供原文/中文版入口。
 - **分享**：调用系统分享面板分享档案链接，失败时回退到复制链接。
 
 ## 数据与离线策略
@@ -83,10 +87,29 @@ npm run preview     # 预览生产构建（PWA 在 localhost 下可用）
 1. 安装 Node 22 与 JDK 21；
 2. `npm ci`、`npm run build`；
 3. `npx cap sync android`；
-4. 在 `ubuntu-latest` 上执行 `./gradlew assembleDebug`；
-5. 上传 `app-debug.apk` 作为 Actions artifact。
+4. 从 Actions Secrets 解码 release keystore，执行 `./gradlew assembleRelease`；
+5. 上传已签名的 `app-release.apk` 作为 Actions artifact。
 
-推送 `v*` 标签时，APK 还会附加到对应的 GitHub Release。
+推送 `v*` 标签时，已签名 APK 还会附加到对应的 GitHub Release。
+
+签名使用仓库 Secrets（不要提交 keystore）：
+
+| Secret | 内容 |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | release keystore 的 Base64 |
+| `ANDROID_KEYSTORE_PASSWORD` | keystore 密码 |
+| `ANDROID_KEY_ALIAS` | key alias |
+| `ANDROID_KEY_PASSWORD` | key 密码 |
+
+本地生成 keystore（示例，密码请自行保管）：
+
+```bash
+keytool -genkeypair -v -keystore ../scp-archive-release.jks \
+  -storetype PKCS12 -alias scp-archive -keyalg RSA -keysize 4096 \
+  -validity 10000 -dname "CN=SCP Archive, O=SCP Archive, C=CN"
+base64 -w0 ../scp-archive-release.jks > ../keystore.b64
+```
+
 
 ### 本地构建
 
@@ -95,10 +118,10 @@ npm run preview     # 预览生产构建（PWA 在 localhost 下可用）
 ```bash
 npm run cap:sync
 cd android
-./gradlew assembleDebug
+./gradlew assembleRelease
 ```
 
-产物位于 `android/app/build/outputs/apk/debug/app-debug.apk`。
+产物位于 `android/app/build/outputs/apk/release/app-release.apk`。本地未设置 `SCP_KEYSTORE_PATH` 等环境变量时，release 产物不会签名；请使用上面的 Secrets 配置，或自行导出四个环境变量。
 
 ## 更新目录快照
 
@@ -136,7 +159,8 @@ android/            Capacitor Android 工程
 - 只覆盖中文分部 001–4999 与英文总部 001–9999 的系列页；未收录的分部/页面不会出现在目录中。
 - 没有账号系统，收藏与进度不会跨设备同步。
 - 人员等级只是阅读氛围与界面模拟，不构成真实访问控制；它不会改变 Wiki 上的公开内容。
-- CI 目前只产出 **debug APK**；发布正式版需要自行配置签名。
+- CI 产出 release 签名的 APK；debug 构建仍可用 `./gradlew assembleDebug`。
+- 英文原文条目只有在中文分部存在对应译文时才能切换中文；没有译文的条目会显示提示与原文入口，不会自动机翻。
 
 ## 许可与声明
 

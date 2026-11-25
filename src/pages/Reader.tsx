@@ -33,9 +33,11 @@ import {
 } from '../lib/constants';
 import { readArticle } from '../lib/db';
 import { formatNumber } from '../lib/format';
+import { openExternal } from '../lib/external';
 import { isNative, lightHaptic, useDocumentTitle } from '../lib/hooks';
 import { cacheArticle, getReadingProgress } from '../lib/library';
 import type { Article, Branch, ProgressRecord, WikiErrorCode } from '../lib/types';
+import { tagLabel } from '../lib/tagLabels';
 import { fetchArticle, isOnline, WikiError } from '../lib/wiki';
 import { useCatalog } from '../state/catalog';
 import { useLibrary } from '../state/library';
@@ -87,6 +89,10 @@ export function Reader() {
   const restoredFor = useRef<string | null>(null);
 
   const entry = useMemo(() => findEntry(entries, branch, slug), [entries, branch, slug]);
+  const cnEntry = useMemo(
+    () => (branch === 'en' ? findEntry(entries, 'cn', slug) : undefined),
+    [entries, branch, slug],
+  );
   const displayTitle = article ? entry?.title?.trim() || article.title : '';
   const tagList = article ? article.tags.filter((tag) => !tag.startsWith('_')) : [];
   const shownTags = allTags ? tagList : tagList.slice(0, 7);
@@ -265,6 +271,13 @@ export function Reader() {
 
   const handleArticleClick = (event: MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
+    const external = target.closest<HTMLAnchorElement>('a[data-external]');
+    if (external) {
+      event.preventDefault();
+      void openExternal(external.href);
+      return;
+    }
+
     const collapse = target.closest<HTMLElement>('[data-collapse]');
     if (collapse) {
       event.preventDefault();
@@ -312,7 +325,7 @@ export function Reader() {
       if (isNative) {
         const { value } = await Share.canShare();
         if (value) {
-          await Share.share({ title: shareTitle, text: 'SCP Archive', url, dialogTitle: '分享档案' });
+          await Share.share({ title: shareTitle, text: 'SCP 档案库', url, dialogTitle: '分享档案' });
           return;
         }
       }
@@ -466,9 +479,10 @@ export function Reader() {
               {shownTags.map((tag) => (
                 <Chip
                   key={tag}
+                  title={tag}
                   onClick={() => navigate(`/search?q=${encodeURIComponent(tag)}`)}
                 >
-                  {tag}
+                  {tagLabel(tag)}
                 </Chip>
               ))}
               {tagList.length > shownTags.length ? (
@@ -476,6 +490,32 @@ export function Reader() {
               ) : allTags && tagList.length > 7 ? (
                 <Chip onClick={() => setAllTags(false)}>收起</Chip>
               ) : null}
+            </div>
+          ) : null}
+
+          {branch === 'en' ? (
+            <div className="reader-translation">
+              <Icon name="globe" size={17} />
+              <div className="reader-translation__text">
+                <strong>{cnEntry ? '本篇有中文译本' : '本篇暂无中文译本'}</strong>
+                <span>
+                  {cnEntry
+                    ? '中文分部已收录对应译文，可切换到中文阅读。'
+                    : '中文分部尚未收录对应译文，当前显示英文原文。'}
+                </span>
+              </div>
+              {cnEntry ? (
+                <Button
+                  variant="tonal"
+                  onClick={() => navigate(`/read/cn/${cnEntry.slug}`)}
+                >
+                  阅读中文版
+                </Button>
+              ) : (
+                <Button variant="text" onClick={() => void openExternal(article.sourceUrl)}>
+                  查看原文
+                </Button>
+              )}
             </div>
           ) : null}
         </header>
@@ -520,7 +560,13 @@ export function Reader() {
               正文来自 SCP Wiki
               {article.updated ? ` · ${article.updated}` : ''}
             </p>
-            <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              href={article.sourceUrl}
+              onClick={(event) => {
+                event.preventDefault();
+                void openExternal(article.sourceUrl);
+              }}
+            >
               查看原文 <Icon name="external" size={14} />
             </a>
           </div>
@@ -582,7 +628,7 @@ export function Reader() {
           </div>
 
           <p className="reader-license">
-            本页内容遵循 CC BY-SA 3.0。SCP Archive 是非官方阅读器，与 SCP 基金会无隶属关系。
+            本页内容遵循 CC BY-SA 3.0。SCP 档案库是非官方阅读器，与 SCP 基金会无隶属关系。
           </p>
         </footer>
       </article>
@@ -670,8 +716,10 @@ export function Reader() {
           <a
             className="sheet-list__item"
             href={article.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={(event) => {
+              event.preventDefault();
+              void openExternal(article.sourceUrl);
+            }}
           >
             <Icon name="external" size={19} />
             <span>在浏览器打开原文</span>

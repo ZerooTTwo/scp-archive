@@ -106,15 +106,17 @@ export function Chip({
   selected,
   onClick,
   icon,
+  title,
 }: {
   children: ReactNode;
   selected?: boolean;
   onClick?: () => void;
   icon?: IconName;
+  title?: string;
 }) {
   if (!onClick) {
     return (
-      <span className={cx('chip', selected && 'chip--selected', 'chip--static')}>
+      <span className={cx('chip', selected && 'chip--selected', 'chip--static')} title={title}>
         {icon ? <Icon name={icon} size={15} /> : null}
         {children}
       </span>
@@ -126,6 +128,7 @@ export function Chip({
       className={cx('chip', selected && 'chip--selected')}
       onClick={onClick}
       aria-pressed={selected}
+      title={title}
     >
       {icon ? <Icon name={icon} size={15} /> : null}
       {children}

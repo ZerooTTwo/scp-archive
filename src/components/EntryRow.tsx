@@ -58,7 +58,7 @@ export function EntryRow({
         <span className="entry-row__body">
           <span className="entry-row__title">
             <Highlight text={entry.title} query={query} />
-            {isNew ? <span className="entry-row__new">NEW</span> : null}
+            {isNew ? <span className="entry-row__new">新</span> : null}
           </span>
           <span className="entry-row__meta">
             {cached ? (

@@ -31,12 +31,12 @@ export function Taskforces() {
     <div className="page taskforces-page">
       <TopBar
         title="机动特遣队"
-        subtitle="MOBILE TASK FORCES"
+        subtitle="基金会机动特遣队"
         onBack={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
       />
 
       <header className="tf-hero">
-        <span className="tf-kicker">SECURE · CONTAIN · PROTECT</span>
+        <span className="tf-kicker">控制 · 收容 · 保护</span>
         <h1>机动特遣队</h1>
         <p>
           基金会为特定异常、战术环境与收容任务编组的专业单位。这里只收录公开名录中的
@@ -88,8 +88,8 @@ export function Taskforces() {
                   <span className="tf-card__id">{taskforce.name}</span>
                   <span className="tf-card__status">{taskforce.status}</span>
                 </div>
-                <h2>{taskforce.alias}</h2>
-                <p className="tf-card__nickname">{taskforce.nickname}</p>
+                <h2>{taskforce.nickname}</h2>
+                <p className="tf-card__nickname">{taskforce.alias}</p>
                 <p className="tf-card__motto">{taskforce.motto}</p>
                 <p className="tf-card__role">{taskforce.role}</p>
 

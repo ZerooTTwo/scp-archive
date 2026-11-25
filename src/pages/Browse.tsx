@@ -21,7 +21,7 @@ import { useCatalog } from '../state/catalog';
 import { useLibrary } from '../state/library';
 import { useSettings } from '../state/settings';
 
-const PAGE_SIZE = 500;
+const PAGE_SIZE = 120;
 
 export function Browse() {
   useDocumentTitle('档案库');
@@ -55,8 +55,8 @@ export function Browse() {
     return sortEntries(list);
   }, [entries, branch, activeSeries, onlyNew]);
 
-  const visible = activeSeries === 'all' ? filtered.slice(0, limit) : filtered;
-  const hasMore = activeSeries === 'all' && visible.length < filtered.length;
+  const visible = filtered.slice(0, limit);
+  const hasMore = visible.length < filtered.length;
   const series = seriesForBranch(branch);
 
   useEffect(() => {
@@ -221,7 +221,9 @@ export function Browse() {
               >
                 加载更多（剩余 {formatNumber(filtered.length - visible.length)} 条）
               </Button>
-              <p className="load-more__hint">继续向下滚动会自动加载，直到显示全部。</p>
+              <p className="load-more__hint">
+                已加载 {formatNumber(visible.length)} / {formatNumber(filtered.length)} 条，继续向下滚动会自动加载。
+              </p>
             </div>
           ) : (
             <p className="list-end">已显示全部 {formatNumber(filtered.length)} 条档案</p>

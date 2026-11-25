@@ -261,6 +261,19 @@ function resolveLink(raw: string, branch: Branch): LinkTarget {
     return id ? { kind: 'anchor', value: id } : { kind: 'none' };
   }
 
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      const siteHosts = Object.values(SITE).map((site) => new URL(site).hostname);
+      if (!siteHosts.includes(url.hostname)) {
+        return { kind: 'external', value: url.href };
+      }
+    } catch {
+      return { kind: 'none' };
+    }
+  }
+
   const parsed = normalisePath(raw);
   if (!parsed) return { kind: 'none' };
   const { path, hash } = parsed;
@@ -278,7 +291,10 @@ function resolveLink(raw: string, branch: Branch): LinkTarget {
 
   const firstSegment = slug.split('/')[0];
   if (!/^[a-z0-9][a-z0-9-]*$/.test(firstSegment)) {
-    return { kind: 'external', value: raw };
+    return {
+      kind: 'external',
+      value: `${SITE[branch]}/${slug}${hash ? `#${hash}` : ''}`,
+    };
   }
   if (SPECIAL_PAGES.has(firstSegment) || firstSegment.startsWith('_')) {
     return {

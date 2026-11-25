@@ -20,15 +20,15 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
-        name: 'SCP Archive · 基金会档案',
-        short_name: 'SCP Archive',
+        name: 'SCP 档案库 · 基金会档案',
+        short_name: 'SCP 档案库',
         description:
           '一个离线优先的 SCP 基金会文档阅读器：全量目录、收藏、进度与正文缓存。',
         lang: 'zh-CN',
         theme_color: '#efe9dd',
         background_color: '#141110',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'any',
         start_url: './',
         scope: './',
         icons: [

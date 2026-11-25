@@ -1,7 +1,7 @@
 {
   "name": "scp-archive",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "SCP Archive — a Material 3, offline-first reader for the SCP Foundation wiki.",
   "license": "MIT",
@@ -20,6 +20,7 @@
   "dependencies": {
     "@capacitor/android": "8.6.2",
     "@capacitor/app": "8.1.2",
+    "@capacitor/browser": "8.0.5",
     "@capacitor/core": "8.6.2",
     "@capacitor/haptics": "8.0.2",
     "@capacitor/share": "8.0.3",

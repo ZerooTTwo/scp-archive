@@ -137,9 +137,9 @@ export function useStableCallback<T extends (...args: never[]) => unknown>(callb
 }
 
 export function useDocumentTitle(title: string | null): void {
-  const base = 'SCP Archive · 基金会档案';
+  const base = 'SCP 档案库 · 基金会档案';
   useEffect(() => {
-    document.title = title ? `${title} · SCP Archive` : base;
+    document.title = title ? `${title} · SCP 档案库` : base;
     return () => {
       document.title = base;
     };

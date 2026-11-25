@@ -1011,3 +1011,78 @@
 .snackbar__close:hover {
   opacity: 1;
 }
+
+/* ── Landscape rail ──────────────────────────────────────────────────────── */
+
+/*
+ * Phones in landscape have very little vertical room. Move the navigation to a
+ * left rail and let the content use the full width instead of stacking a
+ * 64px bottom bar under a 390px-tall viewport.
+ */
+@media (orientation: landscape) and (max-height: 560px) {
+  :root {
+    --rail-width: 78px;
+  }
+
+  .app {
+    max-width: none;
+  }
+
+  .app-main--tab {
+    padding-bottom: 20px;
+    padding-left: calc(var(--rail-width) + env(safe-area-inset-left));
+  }
+
+  .navbar {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: calc(var(--rail-width) + env(safe-area-inset-left));
+    max-width: none;
+    height: auto;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    border-top: 0;
+    border-right: 1px solid var(--outline-variant);
+    transform: none;
+  }
+
+  .navbar__inner,
+  .navbar__inner--five {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    height: 100%;
+    padding: 8px 8px 8px calc(8px + env(safe-area-inset-left));
+  }
+
+  .navbar__item {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 56px;
+    border-radius: 14px;
+  }
+
+  .navbar__icon,
+  .navbar__inner--five .navbar__icon {
+    width: 46px;
+    height: 28px;
+  }
+
+  .navbar__label {
+    font-size: 10px;
+  }
+
+  .fab {
+    right: 22px;
+    bottom: 22px;
+  }
+
+  .snackbar {
+    right: auto;
+    bottom: 18px;
+    left: calc(50% + var(--rail-width) / 2);
+    width: calc(100% - var(--rail-width) - 32px);
+  }
+}

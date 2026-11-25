@@ -7,7 +7,7 @@ export function NotFound({ onHome }: { onHome: () => void }) {
   return (
     <div className="page notfound">
       <Logo size={56} />
-      <p className="notfound__code">404 / ARCHIVE NOT FOUND</p>
+      <p className="notfound__code">404 / 档案未找到</p>
       <h1>这条记录不在档案中</h1>
       <p className="notfound__copy">
         页面可能已被移动，或链接中的编号有误。回到首页继续检索基金会档案。

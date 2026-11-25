@@ -92,7 +92,7 @@ export function SettingsPage() {
               {currentClearance.badge}
             </span>
             <div className="clearance-current__text">
-              <span className="clearance-current__eyebrow">CURRENT CREDENTIAL</span>
+              <span className="clearance-current__eyebrow">当前权限凭证</span>
               <strong>{currentClearance.name}</strong>
               <p>{currentClearance.description}</p>
             </div>
@@ -319,7 +319,7 @@ export function SettingsPage() {
       <section className="settings-group">
         <h2 className="settings-group__title">关于</h2>
         <div className="settings-card">
-          <SettingRow title="SCP Archive" description="版本 0.2.0 · Capacitor + React">
+          <SettingRow title="SCP 档案库" description="版本 0.3.0 · Capacitor + React">
             <Button variant="text" onClick={() => update(DEFAULT_SETTINGS)}>
               恢复默认
             </Button>

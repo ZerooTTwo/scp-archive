@@ -80,8 +80,8 @@ export function Home() {
         <div className="brand">
           <Logo size={36} />
           <div className="brand__text">
-            <span className="brand__name">SCP ARCHIVE</span>
-            <span className="brand__sub">FOUNDATION ARCHIVE · 离线档案</span>
+            <span className="brand__name">SCP 档案库</span>
+            <span className="brand__sub">基金会档案 · 离线阅读</span>
           </div>
         </div>
         <div className="home-head__actions">
@@ -121,7 +121,7 @@ export function Home() {
         <div className="hero__grid" aria-hidden="true" />
         <div className="hero__kicker">
           <span className="hero__rule" />
-          SECURE · CONTAIN · PROTECT
+          控制 · 收容 · 保护
         </div>
         <h1 className="hero__title">
           收录 <em>{loading ? '——' : formatNumber(total)}</em> 份档案
@@ -276,7 +276,7 @@ export function Home() {
       <footer className="home-footer">
         <div className="home-footer__brand">
           <Logo size={24} />
-          <span>SCP ARCHIVE · 非官方阅读器</span>
+          <span>SCP 档案库 · 非官方阅读器</span>
         </div>
         <p>
           目录与正文来自 SCP Wiki，内容遵循 CC BY-SA 3.0 协议。本应用与 SCP 基金会无隶属关系。

@@ -13,6 +13,11 @@ SCP Archive 是一个非官方的开源阅读器，面向手机屏幕设计。�
   <img src="docs/screenshots/settings.png" width="260" alt="设置" />
 </p>
 
+## 下载
+
+- **Android APK**：[v0.1.0](https://github.com/ZerooTTwo/scp-archive/releases/tag/v0.1.0)（debug 签名，安装时需允许未知来源）
+- **Web / PWA**：`npm run build` 后部署 `dist/`，或本地 `npm run dev`
+
 ## 功能
 
 - **全量目录**：内置 15 个系列页的快照，共 14,589 条档案（中文 4,737 条 + 英文 9,852 条），按系列与编号归档。

@@ -26,7 +26,7 @@ SCP Archive 是一个非官方的开源阅读器，面向手机屏幕设计。�
 
 ## 下载
 
-v0.4.0 同时提供两个独立安装包，功能完全相同，只是桌面图标不同；两个包的 applicationId 不同，可以并排安装，数据互不相通。
+v0.4.1 同时提供两个独立安装包，功能完全相同，只是桌面图标不同；两个包的 applicationId 不同，可以并排安装，数据互不相通。
 
 - **官方 SCP 标志版**：[scp-archive-official.apk](https://github.com/ZerooTTwo/scp-archive/releases/latest/download/scp-archive-official.apk)
 - **SCP 中国分部标志版**：[scp-archive-cn.apk](https://github.com/ZerooTTwo/scp-archive/releases/latest/download/scp-archive-cn.apk)

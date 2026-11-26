@@ -122,6 +122,10 @@ export function Reader() {
       security.reason,
     );
   }, [article, security, bodyHtml, settings.clearance]);
+  const renderedHtml = redaction?.html ?? bodyHtml;
+  // Keep the object identity stable across progress-bar renders. React otherwise
+  // rewrites innerHTML on every scroll tick, collapsing any opened Wikidot block.
+  const bodyMarkup = useMemo(() => ({ __html: renderedHtml }), [renderedHtml]);
   useDocumentTitle(article ? `${article.code} · ${displayTitle}` : '阅读');
   const series = entry ? SERIES_BY_ID.get(entry.seriesId) : undefined;
   const favorite = isFavorite(branch, slug);
@@ -671,7 +675,7 @@ export function Reader() {
           style={{ fontSize: `${settings.fontScale}rem`, lineHeight: settings.lineHeight }}
           onClick={handleArticleClick}
           onKeyDown={handleArticleKeyDown}
-          dangerouslySetInnerHTML={{ __html: redaction?.html ?? bodyHtml }}
+          dangerouslySetInnerHTML={bodyMarkup}
         />
 
         <footer className="reader-foot">

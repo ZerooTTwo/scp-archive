@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { DEFAULT_SETTINGS } from '../lib/constants';
 import { isClearance } from '../lib/clearance';
+import { applyDesktopIcon } from '../lib/appIcon';
 import { readSettings, writeSettings } from '../lib/db';
 import { useResolvedTheme, useThemeEffect } from '../lib/hooks';
 import type { Branch, Clearance, Settings, ThemeMode } from '../lib/types';
@@ -88,6 +89,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const apple = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
     if (apple) apple.href = `/icons/${settings.appIcon}/apple-touch-icon.png`;
   }, [settings.appIcon]);
+
+  // Keep the Android launcher alias in sync with the saved preference. The
+  // promise rejects only on unsupported shells, where the favicon is enough.
+  useEffect(() => {
+    if (!loaded) return;
+    void applyDesktopIcon(settings.appIcon).catch(() => undefined);
+  }, [loaded, settings.appIcon]);
 
   useEffect(() => {
     let cancelled = false;

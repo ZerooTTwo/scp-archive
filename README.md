@@ -26,26 +26,25 @@ SCP Archive 是一个非官方的开源阅读器，面向手机屏幕设计。�
 
 ## 下载
 
-v0.4.1 同时提供两个独立安装包，功能完全相同，只是桌面图标不同；两个包的 applicationId 不同，可以并排安装，数据互不相通。
+v0.5.0 只发布一个安装包。装好后可在「设置 → 应用标志」里切换官方 SCP 标志或中国分部中分标志；Android 会同时切换桌面图标，网页版只切换应用内标志。
 
-- **官方 SCP 标志版**：[scp-archive-official.apk](https://github.com/ZerooTTwo/scp-archive/releases/latest/download/scp-archive-official.apk)
-- **SCP 中国分部标志版**：[scp-archive-cn.apk](https://github.com/ZerooTTwo/scp-archive/releases/latest/download/scp-archive-cn.apk)
+- **Android APK**：[scp-archive.apk](https://github.com/ZerooTTwo/scp-archive/releases/latest/download/scp-archive.apk)
 - **Web / PWA**：`npm run build` 后部署 `dist/`，或本地 `npm run dev`
 
 <p align="center">
-  <img src="docs/icons/official.png" width="64" alt="官方 SCP 标志版" />
+  <img src="docs/icons/official.png" width="64" alt="官方 SCP 标志" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/icons/cn.png" width="64" alt="SCP 中国分部标志版" />
+  <img src="docs/icons/cn.png" width="64" alt="SCP 中国分部标志" />
 </p>
 <p align="center">
-  <sub>官方标志版 / 中国分部标志版</sub>
+  <sub>一个安装包，两种可切换的桌面/应用内标志</sub>
 </p>
 
-两个 APK 都使用 release keystore 签名。安装时仍需允许未知来源；从旧 debug 版或另一个图标版覆盖安装会因签名/包名不同而失败，需要先卸载旧版（会清空本地收藏与进度）。
+APK 使用 release keystore 签名。v0.4.1 官方版可以直接覆盖安装；v0.4.1 的中国分部版包名是 `org.scparchive.reader.cn`，不会被新版覆盖，需要先卸载旧包再安装（会清空旧包的本地收藏与进度）。
 
 ## 功能
 
-- **全量目录**：内置 25 个系列页的快照，共 22,072 条档案（中文 12,220 条 + 英文 9,852 条），按系列与编号归档。
+- **全量目录**：内置 25 个系列页的快照，共 24,791 条档案（中文 14,855 条：译文 9,933 + 原创 4,922；英文 9,936 条），按系列与编号归档。
 - **中文译本 + 原创**：中文分部同时收录 SCP-001 – 9999 的中文译文与 SCP-CN-001 – 4999 的中文原创，译文和原创分卷浏览，不再只显示英文原文。
 - **浏览与检索**：分部切换、系列筛选、编号/标题搜索、只看新增、随机档案；系列内滚动到列表底部才加载下一批，不再一次性渲染整卷。
 - **离线阅读**：打开过的正文自动写入本地；收藏时主动下载正文；最多保留 300 篇正文。
@@ -55,7 +54,7 @@ v0.4.1 同时提供两个独立安装包，功能完全相同，只是桌面图�
 - **人员等级**：设置页最上方可在 O5、4、3、2、1、D 级六档之间切换；全站主色、深色档案头、底栏栏目与正文脱敏程度会随之变化。
 - **机动特遣队**：O5 / 4 级可查看完整行动记录、装备与人员状态；3 级只能查看单位名录；1 级与 D 级无访问权限，底栏入口也会隐藏。
 - **PWA + Android**：浏览器里可作为 PWA 安装；Android 端使用 Capacitor 打包，可直接安装 APK；横屏时底栏变为左侧导航栏。
-- **图标可选**：设置页可在官方 SCP 标志与中国分部中分标志之间切换应用内标志；安装包本身分为官方版与中分版。
+- **图标可选**：设置页可在官方 SCP 标志与中国分部中分标志之间切换；同一个 APK 内完成，Android 会同步切换桌面图标，无需安装第二个包。
 - **中文界面**：应用壳、权限、特遣队与常用标签均已中文化；英文原文条目会提示是否有中文译本，并提供原文/中文版入口。
 - **自定义翻译接口**：可填写任意 OpenAI 兼容的 `/chat/completions` 接口（DeepSeek、OpenAI、本地 Ollama 等），按篇翻译当前英文档案；译文缓存在本机，并明确标注“机器翻译”。API Key 只保存在本地 IndexedDB，不会上传到本项目服务器。
 - **分享**：调用系统分享面板分享档案链接，失败时回退到复制链接。
@@ -64,7 +63,7 @@ v0.4.1 同时提供两个独立安装包，功能完全相同，只是桌面图�
 
 | 内容 | 是否内置 | 说明 |
 | --- | --- | --- |
-| 目录（编号 + 标题 + 系列） | 是 | `public/seed/catalog.json`，约 3.2 MB |
+| 目录（编号 + 标题 + 系列） | 是 | `public/seed/catalog.json`，约 3.6 MB |
 | 正文 | 否 | 首次阅读时抓取，随后写入 IndexedDB |
 | 图片 | 否 | 在线阅读时加载；不保证离线可用 |
 | 收藏 / 历史 / 设置 | 本地 | IndexedDB + localStorage 主题镜像 |
@@ -109,10 +108,10 @@ npm run preview     # 预览生产构建（PWA 在 localhost 下可用）
 1. 安装 Node 22 与 JDK 21；
 2. `npm ci`、`npm run build`；
 3. `npx cap sync android`；
-4. 从 Actions Secrets 解码 release keystore，执行 `./gradlew assembleOfficialRelease assembleCnRelease`；
-5. 校验两个 APK 的签名，并上传 `scp-archive-official.apk`、`scp-archive-cn.apk` 作为 Actions artifact。
+4. 从 Actions Secrets 解码 release keystore，执行 `./gradlew assembleRelease`；
+5. 校验 APK 签名，并上传 `scp-archive.apk` 作为 Actions artifact。
 
-推送 `v*` 标签时，两个已签名 APK 都会附加到对应的 GitHub Release。
+推送 `v*` 标签时，签名 APK 会附加到对应的 GitHub Release。
 
 签名使用仓库 Secrets（不要提交 keystore）：
 
@@ -140,13 +139,12 @@ base64 -w0 ../scp-archive-release.jks > ../keystore.b64
 ```bash
 npm run cap:sync
 cd android
-./gradlew assembleOfficialRelease assembleCnRelease
+./gradlew assembleRelease
 ```
 
 产物位于：
 
-- `android/app/build/outputs/apk/official/release/app-official-release.apk`
-- `android/app/build/outputs/apk/cn/release/app-cn-release.apk`
+- `android/app/build/outputs/apk/release/app-release.apk`
 
 本地未设置 `SCP_KEYSTORE_PATH` 等环境变量时，release 产物不会签名；请使用上面的 Secrets 配置，或自行导出四个环境变量。
 
@@ -189,7 +187,7 @@ android/            Capacitor Android 工程
 - CI 产出 release 签名的 APK；debug 构建仍可用 `./gradlew assembleDebug`。
 - 英文原文条目只有在中文分部存在对应译文时才能切换中文；没有译文的条目会显示提示与原文入口。
 - 机器翻译需要用户自己的 API Key；翻译质量、费用、限流由所选服务商决定。默认不会自动翻译整站，也不会把 Key 上传到本项目服务器。当前只翻译正文与标题，标签使用内置词典，未覆盖的标签保留英文。
-- 两个图标版 APK 使用不同 applicationId，本地数据不共享；未来如需共享数据需要额外的迁移方案。
+- Android 桌面图标通过切换 launcher activity-alias 实现；部分第三方桌面启动器可能需要几秒或重新加载桌面后才会刷新图标。
 
 ## 许可与声明
 

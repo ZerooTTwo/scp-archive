@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { parseHTML } from 'linkedom';
 
 /**
  * Builds the bundled catalog snapshot (public/seed/catalog.json).
@@ -54,25 +55,6 @@ const BRANCHES = {
 const UA = 'SCP-Archive-Builder/0.1 (open-source reader; catalog snapshot)';
 const OUT = path.resolve('public/seed/catalog.json');
 
-function decodeEntities(input) {
-  return input
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'")
-    .replace(/&ndash;/gi, '–')
-    .replace(/&mdash;/gi, '—')
-    .replace(/&hellip;/gi, '…');
-}
-
-function stripTags(input) {
-  return decodeEntities(input.replace(/<[^>]*>/g, '')).replace(/\s+/g, ' ').trim();
-}
-
 async function fetchHtml(url) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
@@ -94,32 +76,37 @@ async function fetchHtml(url) {
   throw new Error('unreachable');
 }
 
-/** Cut the article body out of the full Wikidot page. */
-function bodyOf(html) {
-  const start = html.indexOf('id="page-content"');
-  if (start < 0) return html;
-  const end = html.indexOf('<div class="page-tags"', start);
-  return end > start ? html.slice(start, end) : html.slice(start);
-}
-
 function parseSeries(html) {
-  const body = bodyOf(html);
+  const { document } = parseHTML(html);
+  const content = document.querySelector('#page-content');
+  if (!content) throw new Error('无法解析系列目录');
+
   const items = [];
   const seen = new Set();
-  const re =
-    /<li[^>]*>\s*<a\s+href="\/(scp-[a-z0-9-]+)"[^>]*>([\s\S]*?)<\/a>([\s\S]*?)<\/li>/gi;
 
-  let match;
-  while ((match = re.exec(body))) {
+  for (const listItem of content.querySelectorAll('li')) {
+    // Only the first link is the entry itself; later links in a title are
+    // cross-references and must not become separate catalog entries.
+    const anchor = listItem.querySelector(':scope > a[href]');
+    if (!anchor) continue;
+    const href = anchor.getAttribute('href') ?? '';
+    const match = href.match(/^\/(scp-[a-z0-9-]+)\/?$/i);
+    if (!match) continue;
     const slug = match[1].toLowerCase();
-    const code = stripTags(match[2]).toUpperCase();
+    const code = (anchor.textContent ?? '').replace(/\s+/g, ' ').trim().toUpperCase();
     if (!/^SCP-[A-Z0-9-]+$/.test(code)) continue;
     if (seen.has(slug)) continue;
     seen.add(slug);
 
-    let title = stripTags(match[3]).replace(/^[\s\-–—:：|]+/, '');
+    let title = (listItem?.textContent ?? '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(new RegExp(`^${code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '')
+      .replace(/^[\s\-–—:：|]+/, '')
+      .trim();
     if (!title) title = code;
-    items.push({ slug, code, title });
+
+    items.push({ slug, code, title: title.slice(0, 200) });
   }
   return items;
 }

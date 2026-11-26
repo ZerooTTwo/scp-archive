@@ -6,7 +6,6 @@ import {
   Button,
   Dialog,
   EmptyState,
-  IconButton,
   Segmented,
   TopBar,
 } from '../components/ui';
@@ -60,7 +59,6 @@ export function Library() {
       <TopBar
         title="收藏与离线"
         subtitle={offline.length ? `${offline.length} 篇正文已保存 · ${formatBytes(offlineBytes)}` : '本地优先，断网可读'}
-        actions={<IconButton icon="settings" label="设置" onClick={() => navigate('/settings')} />}
       />
 
       <div className="library-stats">

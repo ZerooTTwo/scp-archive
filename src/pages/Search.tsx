@@ -83,6 +83,7 @@ export function Search() {
       <TopBar
         title="搜索"
         subtitle={loading ? '正在载入目录' : `${formatNumber(total)} 条可检索档案`}
+        onBack={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
       />
 
       <div className="search-hero">

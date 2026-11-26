@@ -5,7 +5,6 @@ import { Icon, Logo } from '../components/Icon';
 import {
   Badge,
   Button,
-  Fab,
   IconButton,
   LinearProgress,
   SectionHeader,
@@ -86,7 +85,6 @@ export function Home() {
         </div>
         <div className="home-head__actions">
           <IconButton icon="search" label="搜索档案" onClick={() => navigate('/search')} />
-          <IconButton icon="settings" label="设置" onClick={() => navigate('/settings')} />
         </div>
       </header>
 
@@ -150,6 +148,20 @@ export function Home() {
           </span>
         </div>
       </section>
+
+      <button type="button" className="random-card" onClick={goRandom} disabled={!total}>
+        <span className="random-card__seal">
+          <Icon name="dice" size={22} />
+        </span>
+        <span className="random-card__text">
+          <strong>随机翻阅</strong>
+          <span>从全部分部中抽一份档案</span>
+        </span>
+        <span className="random-card__meta">
+          {loading ? '载入中' : `${formatNumber(total)} 份`}
+          <Icon name="chevron-right" size={16} />
+        </span>
+      </button>
 
       {recent.length ? (
         <section className="section">
@@ -287,8 +299,6 @@ export function Home() {
           <Badge tone="success">本地优先</Badge>
         </div>
       </footer>
-
-      <Fab label="随机档案" onClick={goRandom} />
     </div>
   );
 }

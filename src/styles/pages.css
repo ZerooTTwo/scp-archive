@@ -1812,3 +1812,84 @@
 #translation {
   scroll-margin-top: calc(var(--topbar-height) + 20px);
 }
+
+/* Random archive entry — integrated action instead of a floating button. */
+.random-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 12px 0 2px;
+  padding: 11px 13px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface));
+  color: var(--on);
+  text-align: left;
+  box-shadow: var(--shadow-1);
+  transition:
+    transform 140ms var(--ease),
+    border-color 140ms var(--ease),
+    background 140ms var(--ease);
+}
+
+.random-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--outline-variant));
+  background: color-mix(in srgb, var(--primary) 11%, var(--surface));
+}
+
+.random-card:active {
+  transform: scale(0.99);
+}
+
+.random-card:disabled {
+  opacity: 0.55;
+}
+
+.random-card__seal {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--primary-container);
+  color: var(--primary);
+}
+
+.random-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.random-card__text strong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.random-card__text span {
+  overflow: hidden;
+  color: var(--on-3);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.random-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  color: var(--on-3);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 370px) {
+  .random-card__meta {
+    display: none;
+  }
+}

@@ -11,8 +11,7 @@ Outputs:
   public/icons/                  official (default PWA / boot icon)
   public/icons/official/         in-app official mark
   public/icons/cn/               in-app CN mark
-  android/app/src/official/res/  official launcher + splash
-  android/app/src/cn/res/        CN launcher + splash
+  android/app/src/main/res/      official + CN launcher icons, official splash
 """
 
 from __future__ import annotations
@@ -163,26 +162,34 @@ def android_icons() -> None:
         "drawable-port-xxxhdpi": (1280, 1920),
     }
 
-    for mark_name in MARKS:
-        res = ROOT / "android" / "app" / "src" / mark_name / "res"
-        if not (ROOT / "android" / "app").exists():
-            return
-        res.mkdir(parents=True, exist_ok=True)
+    app = ROOT / "android" / "app"
+    if not app.exists():
+        return
+    res = app / "src" / "main" / "res"
+    res.mkdir(parents=True, exist_ok=True)
+
+    # MainActivityOfficial uses the standard ic_launcher names; the CN alias gets
+    # a parallel set so both can stay in the single APK.
+    for mark_name, suffix in (("official", ""), ("cn", "_cn")):
         for density, size in legacy.items():
             folder = res / f"mipmap-{density}"
             folder.mkdir(parents=True, exist_ok=True)
-            draw_mark(mark_name, size).save(folder / "ic_launcher.png", optimize=True)
-            draw_round(mark_name, size).save(folder / "ic_launcher_round.png", optimize=True)
+            draw_mark(mark_name, size).save(folder / f"ic_launcher{suffix}.png", optimize=True)
+            draw_round(mark_name, size).save(
+                folder / f"ic_launcher{suffix}_round.png", optimize=True
+            )
         for density, size in adaptive.items():
             folder = res / f"mipmap-{density}"
             folder.mkdir(parents=True, exist_ok=True)
             draw_foreground(mark_name, size).save(
-                folder / "ic_launcher_foreground.png", optimize=True
+                folder / f"ic_launcher{suffix}_foreground.png", optimize=True
             )
-        for folder, (width, height) in splash_sizes.items():
-            target = res / folder
-            target.mkdir(parents=True, exist_ok=True)
-            draw_splash(mark_name, width, height).save(target / "splash.png", optimize=True)
+
+    # A splash screen cannot follow a runtime icon switch; keep the official mark.
+    for folder, (width, height) in splash_sizes.items():
+        target = res / folder
+        target.mkdir(parents=True, exist_ok=True)
+        draw_splash("official", width, height).save(target / "splash.png", optimize=True)
 
 
 def main() -> None:

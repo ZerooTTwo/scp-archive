@@ -4,7 +4,7 @@
 
 | 文件 | 说明 |
 | --- | --- |
-| `workflows/android.yml` | 在 `ubuntu-latest` 上安装 Node 22、JDK 21，执行 `npm ci`、`npm run build`、`npx cap sync android`，再构建 `official` 和 `cn` 两个 release APK，校验签名后上传 artifact；打 `v*` tag 时附加到 GitHub Release |
+| `workflows/android.yml` | 在 `ubuntu-latest` 上安装 Node 22、JDK 21，执行 `npm ci`、`npm run build`、`npx cap sync android`，再构建一个 release APK，校验签名后上传 artifact；打 `v*` tag 时附加到 GitHub Release |
 
 ## 触发条件
 
@@ -28,7 +28,7 @@ keystore 只会在 runner 的临时目录中解码，不会进入仓库。**不�
 
 ## 产物
 
-- `scp-archive-official.apk`：官方 SCP 标志版，包名 `org.scparchive.reader`
-- `scp-archive-cn.apk`：中国分部标志版，包名 `org.scparchive.reader.cn`
+- `scp-archive.apk`：单一安装包，包名 `org.scparchive.reader`
+- 桌面图标在应用内「设置 → 应用标志」切换，不需要两个安装包
 
-两个 APK 都使用 release keystore 签名，可并排安装；数据互不相通。
+APK 使用 release keystore 签名；Actions artifact 名称是 `scp-archive-apk`。

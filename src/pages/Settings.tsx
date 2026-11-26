@@ -86,11 +86,6 @@ export function SettingsPage() {
   const tfAccess = taskforceAccess(settings.clearance);
   const archiveAccess = clearanceRank(settings.clearance) >= 4 ? '完整正文' : '按等级脱敏';
 
-  const goBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate('/');
-  };
-
   const setTranslation = (patch: Partial<typeof settings.translation>) => {
     update({ translation: { ...settings.translation, ...patch } });
   };
@@ -110,7 +105,7 @@ export function SettingsPage() {
 
   return (
     <div className="page settings-page">
-      <TopBar title="设置" subtitle="权限、外观与数据" onBack={goBack} />
+      <TopBar title="设置" subtitle="权限、外观与数据" />
 
       <section className="settings-group settings-group--clearance" id="clearance">
         <h2 className="settings-group__title">
@@ -207,7 +202,7 @@ export function SettingsPage() {
             ))}
           </div>
           <p className="settings-hint">
-            应用内标志会立即切换。桌面图标由安装包决定：v0.4 同时提供官方版与中分版两个 APK。
+            应用内标志会立即切换；安卓桌面图标也会同步切换，部分启动器需要几秒刷新。网页版只切换应用内标志。
           </p>
         </div>
       </section>
@@ -479,7 +474,7 @@ export function SettingsPage() {
       <section className="settings-group">
         <h2 className="settings-group__title">关于</h2>
         <div className="settings-card">
-          <SettingRow title="SCP Archive" description="版本 0.4.1 · Capacitor + React">
+          <SettingRow title="SCP Archive" description="版本 0.5.0 · Capacitor + React">
             <Button variant="text" onClick={() => update(DEFAULT_SETTINGS)}>
               恢复默认
             </Button>

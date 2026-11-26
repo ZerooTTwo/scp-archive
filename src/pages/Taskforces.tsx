@@ -32,7 +32,6 @@ export function Taskforces() {
       <TopBar
         title="机动特遣队"
         subtitle="基金会机动特遣队"
-        onBack={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
       />
 
       <header className="tf-hero">

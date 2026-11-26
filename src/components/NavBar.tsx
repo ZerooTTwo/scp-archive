@@ -11,12 +11,15 @@ interface NavTab {
   end?: boolean;
 }
 
-const TABS: NavTab[] = [
-  { to: '/', label: '首页', icon: 'home', end: true },
-  { to: '/browse', label: '档案库', icon: 'grid' },
-  { to: '/search', label: '搜索', icon: 'search' },
-  { to: '/library', label: '收藏', icon: 'bookmark', activeIcon: 'bookmark-filled' },
-];
+const HOME_TAB: NavTab = { to: '/', label: '首页', icon: 'home', end: true };
+const BROWSE_TAB: NavTab = { to: '/browse', label: '档案库', icon: 'grid' };
+const LIBRARY_TAB: NavTab = {
+  to: '/library',
+  label: '收藏',
+  icon: 'bookmark',
+  activeIcon: 'bookmark-filled',
+};
+const SETTINGS_TAB: NavTab = { to: '/settings', label: '设置', icon: 'settings' };
 
 const TASKFORCE_TAB: NavTab = {
   to: '/taskforces',
@@ -27,8 +30,8 @@ const TASKFORCE_TAB: NavTab = {
 export function NavBar() {
   const { settings } = useSettings();
   const tabs = canAccessTaskforces(settings.clearance)
-    ? [...TABS, TASKFORCE_TAB]
-    : TABS;
+    ? [HOME_TAB, BROWSE_TAB, TASKFORCE_TAB, LIBRARY_TAB, SETTINGS_TAB]
+    : [HOME_TAB, BROWSE_TAB, LIBRARY_TAB, SETTINGS_TAB];
 
   return (
     <nav className="navbar" aria-label="主导航">

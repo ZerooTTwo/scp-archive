@@ -12,7 +12,7 @@ import { Search } from './pages/Search';
 import { SettingsPage } from './pages/Settings';
 import { Taskforces } from './pages/Taskforces';
 
-const TAB_PATHS = new Set(['/', '/browse', '/search', '/library', '/taskforces']);
+const TAB_PATHS = new Set(['/', '/browse', '/library', '/taskforces', '/settings']);
 
 function Shell() {
   const location = useLocation();

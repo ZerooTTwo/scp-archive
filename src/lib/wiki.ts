@@ -189,7 +189,13 @@ export function parseSeriesPage(html: string, series: SeriesDef): Entry[] {
   const entries: Entry[] = [];
   const seen = new Set<string>();
 
-  for (const anchor of Array.from(content.querySelectorAll('li > a'))) {
+  for (const listItem of Array.from(content.querySelectorAll('li'))) {
+    // Only the first link of a list item is the entry itself. Some Chinese
+    // titles cross-link to another SCP later in the sentence (for example
+    // "SCP-CN-2737 - 一次有关 SCP-165 的收容事故"); those links must not be
+    // mistaken for separate catalog entries.
+    const anchor = listItem.querySelector(':scope > a[href]');
+    if (!anchor) continue;
     const href = anchor.getAttribute('href') ?? '';
     const match = href.match(/^\/(scp-[a-z0-9-]+)\/?$/i);
     if (!match) continue;
@@ -199,7 +205,6 @@ export function parseSeriesPage(html: string, series: SeriesDef): Entry[] {
     if (seen.has(slug)) continue;
     seen.add(slug);
 
-    const listItem = anchor.closest('li');
     let title = (listItem?.textContent ?? '')
       .replace(/\s+/g, ' ')
       .trim()

@@ -23,6 +23,7 @@ import {
 } from '../components/ui';
 import { findEntry } from '../lib/catalog';
 import {
+  articleAccess,
   articleSecurity,
   CLEARANCES,
   redactArticleHtml,
@@ -112,21 +113,25 @@ export function Reader() {
   const tagList = article ? article.tags.filter((tag) => !tag.startsWith('_')) : [];
   const shownTags = allTags ? tagList : tagList.slice(0, 7);
   const security = useMemo(() => (article ? articleSecurity(article) : null), [article]);
+  const access = security ? articleAccess(security.required, settings.clearance) : 'full';
+  const blocked = access === 'blocked';
   const bodyHtml = activeTranslation?.html ?? article?.html ?? '';
   const redaction = useMemo(() => {
-    if (!article || !security) return null;
+    if (!article || !security || access === 'blocked') return null;
     return redactArticleHtml(
       bodyHtml,
       settings.clearance,
       security.required,
       security.reason,
     );
-  }, [article, security, bodyHtml, settings.clearance]);
+  }, [article, security, bodyHtml, settings.clearance, access]);
   const renderedHtml = redaction?.html ?? bodyHtml;
   // Keep the object identity stable across progress-bar renders. React otherwise
   // rewrites innerHTML on every scroll tick, collapsing any opened Wikidot block.
   const bodyMarkup = useMemo(() => ({ __html: renderedHtml }), [renderedHtml]);
-  useDocumentTitle(article ? `${article.code} · ${displayTitle}` : '阅读');
+  useDocumentTitle(
+    blocked ? '访问受限' : article ? `${article.code} · ${displayTitle}` : '阅读',
+  );
   const series = entry ? SERIES_BY_ID.get(entry.seriesId) : undefined;
   const favorite = isFavorite(branch, slug);
   const cached = offlineKeys.has(key);
@@ -155,6 +160,9 @@ export function Reader() {
     window.scrollTo({ top: 0, behavior: 'auto' });
 
     void (async () => {
+      const isBlocked = (target: Article) =>
+        articleAccess(articleSecurity(target).required, settings.clearance) === 'blocked';
+
       const [stored, saved, cachedTranslation] = await Promise.all([
         readArticle(branch, slug),
         getReadingProgress(branch, slug),
@@ -170,14 +178,16 @@ export function Reader() {
         setArticle(stored);
         setStatus('ready');
         setPercent(saved?.percent ?? 0);
-        if (isOnline() && Date.now() - stored.fetchedAt > ARTICLE_TTL_MS) {
+        if (!isBlocked(stored) && isOnline() && Date.now() - stored.fetchedAt > ARTICLE_TTL_MS) {
           void (async () => {
             try {
               const fresh = await fetchArticle(branch, slug);
               if (cancelled) return;
               setArticle(fresh);
-              await cacheArticle(fresh);
-              if (!cancelled) await refreshOffline();
+              if (!isBlocked(fresh)) {
+                await cacheArticle(fresh);
+                if (!cancelled) await refreshOffline();
+              }
             } catch {
               // Keep the cached copy when a background refresh fails.
             }
@@ -191,9 +201,11 @@ export function Reader() {
         if (cancelled) return;
         setArticle(fresh);
         setStatus('ready');
-        void cacheArticle(fresh)
-          .then(() => (cancelled ? undefined : refreshOffline()))
-          .catch(() => undefined);
+        if (!isBlocked(fresh)) {
+          void cacheArticle(fresh)
+            .then(() => (cancelled ? undefined : refreshOffline()))
+            .catch(() => undefined);
+        }
       } catch (loadError) {
         if (cancelled) return;
         restoringRef.current = false;
@@ -208,10 +220,10 @@ export function Reader() {
     return () => {
       cancelled = true;
     };
-  }, [branch, slug, reloadKey, refreshOffline]);
+  }, [branch, slug, reloadKey, refreshOffline, settings.clearance]);
 
   useEffect(() => {
-    if (status !== 'ready' || !article) return;
+    if (status !== 'ready' || !article || blocked) return;
     const articleKey = `${branch}:${slug}`;
     if (restoredFor.current === articleKey) return;
 
@@ -232,7 +244,7 @@ export function Reader() {
     }, 300);
 
     return () => window.clearTimeout(timer);
-  }, [status, article, branch, slug]);
+  }, [status, article, branch, slug, blocked]);
 
   // Wikidot's image host occasionally drops the first request. Retry once,
   // without changing the visible figure, before giving up.
@@ -256,7 +268,7 @@ export function Reader() {
   }, [article]);
 
   useEffect(() => {
-    if (status !== 'ready' || !article) return;
+    if (status !== 'ready' || !article || blocked) return;
 
     let frame = 0;
     let timer = 0;
@@ -481,6 +493,47 @@ export function Reader() {
             </div>
           }
         />
+      </div>
+    );
+  }
+
+  if (blocked && security) {
+    const required = CLEARANCES[security.required];
+    const current = CLEARANCES[settings.clearance];
+    return (
+      <div className="page reader-page">
+        <div className="reader-topbar">
+          <TopBar title="访问受限" onBack={goBack} />
+        </div>
+        <div className="access-denied">
+          <div className="access-denied__seal" aria-hidden="true">
+            <Icon name="lock" size={30} />
+          </div>
+          <p className="access-denied__eyebrow">权限校验未通过</p>
+          <h1 className="access-denied__title">权限不足</h1>
+          <p className="access-denied__copy">
+            这篇档案需要 <strong>{required.badge} 级</strong>权限，你当前是
+            <strong>{current.name}</strong>。
+          </p>
+          <div className="access-denied__code">
+            <span>档案编号</span>
+            <code>{article.code}</code>
+          </div>
+          <p className="access-denied__hint">
+            正文、标题与元数据已按当前权限屏蔽。提升人员等级后可重新打开。
+          </p>
+          <div className="access-denied__actions">
+            <Button icon="shield" onClick={() => navigate('/settings')}>
+              调整人员等级
+            </Button>
+            <Button variant="text" onClick={() => navigate('/browse')}>
+              返回档案库
+            </Button>
+          </div>
+          <p className="access-denied__note">
+            权限模拟仅用于阅读氛围，不构成真实访问控制。
+          </p>
+        </div>
       </div>
     );
   }

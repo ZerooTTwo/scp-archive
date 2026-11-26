@@ -12,7 +12,7 @@
 | `db.ts` | IndexedDB（idb-keyval）：目录、设置、收藏、历史、正文、进度、翻译缓存 |
 | `sync.ts` | 增量同步 25 个系列页，保留旧缓存，标记新增条目 |
 | `library.ts` | 正文缓存、离线淘汰、阅读进度 |
-| `clearance.ts` | 六档人员等级、栏目权限、档案密级判定、正文脱敏 |
+| `clearance.ts` | 六档人员等级、栏目权限、档案密级判定、分层门禁（低 1 级脱敏 / 低 2 级以上锁定）、正文脱敏 |
 | `translate.ts` | OpenAI 兼容翻译接口、分批翻译、JSON 解析、测试连接 |
 | `tagLabels.ts` | 常用 Wiki 标签的中文词典 |
 | `external.ts` | 用系统浏览器打开外链（Android 用 Capacitor Browser） |

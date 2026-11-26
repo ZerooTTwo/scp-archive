@@ -9,6 +9,7 @@
 | `screenshots/reader.png` | 阅读器：中文正文、标签、目录 |
 | `screenshots/settings.png` | 设置页：人员等级 |
 | `screenshots/taskforces.png` | 机动特遣队 |
+| `screenshots/access-denied.png` | 人员等级不足时的访问受限页 |
 | `screenshots/icons.png` | 设置页“应用标志”选择 |
 | `screenshots/landscape-home.png` | 横屏首页，底栏变成左侧导航 |
 | `screenshots/landscape-browse.png` | 横屏档案库 |

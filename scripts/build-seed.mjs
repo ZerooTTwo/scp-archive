@@ -89,6 +89,9 @@ function parseSeries(html) {
     // cross-references and must not become separate catalog entries.
     const anchor = listItem.querySelector(':scope > a[href]');
     if (!anchor) continue;
+    // Wikidot marks entries that have no page yet with .newpage. They are
+    // placeholders on the series index, not readable articles.
+    if (anchor.classList.contains('newpage')) continue;
     const href = anchor.getAttribute('href') ?? '';
     const match = href.match(/^\/(scp-[a-z0-9-]+)\/?$/i);
     if (!match) continue;

@@ -8,7 +8,7 @@
 | `Browse.tsx` | `/browse` | 档案库：分部/系列筛选、编号搜索、滚动增量加载 |
 | `Search.tsx` | `/search` | 搜索：编号/标题匹配、范围筛选、热门编号；从首页搜索入口进入，不占底栏 |
 | `Library.tsx` | `/library` | 收藏与离线：收藏、阅读历史、离线正文 |
-| `Reader.tsx` | `/read/:branch/:slug` | 阅读器：正文、目录、标签、进度、权限脱敏、机器翻译 |
+| `Reader.tsx` | `/read/:branch/:slug` | 阅读器：正文、目录、标签、进度、分层权限门禁、机器翻译 |
 | `Settings.tsx` | `/settings` | 设置：人员等级、应用标志、外观、翻译接口、本地数据、关于 |
 | `Taskforces.tsx` | `/taskforces` | 机动特遣队：按权限显示名录/完整档案/锁定页 |
 | `NotFound.tsx` | `*` | 404 档案未找到 |

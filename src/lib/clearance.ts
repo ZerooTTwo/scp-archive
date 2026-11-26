@@ -98,6 +98,22 @@ export interface ArticleSecurity {
   reason: string;
 }
 
+export type ArticleAccess = 'full' | 'redacted' | 'blocked';
+
+/**
+ * The reading gate is intentionally tiered:
+ * - at or above the required level: full text;
+ * - one level below: partial redaction;
+ * - two or more below, or anything O5-reserved: no article view at all.
+ * O5 files never partially reveal themselves to lower personnel.
+ */
+export function articleAccess(required: Clearance, current: Clearance): ArticleAccess {
+  const gap = clearanceRank(required) - clearanceRank(current);
+  if (gap <= 0) return 'full';
+  if (required === 'o5' || gap >= 2) return 'blocked';
+  return 'redacted';
+}
+
 const CLASS_ORDER: Array<{ tag: string; clearance: Clearance; label: string }> = [
   { tag: 'apollyon', clearance: 'o5', label: 'Apollyon 级项目' },
   { tag: 'thaumiel', clearance: 'o5', label: 'Thaumiel 级项目' },

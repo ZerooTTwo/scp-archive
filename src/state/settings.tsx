@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -66,6 +67,7 @@ function mergeSettings(stored: Partial<Settings> | undefined): Settings {
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
+  const dirtyRef = useRef(false);
   const resolvedTheme = useResolvedTheme(settings.theme);
   useThemeEffect(resolvedTheme);
 
@@ -101,7 +103,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     void readSettings().then((stored) => {
       if (cancelled) return;
-      setSettings(mergeSettings(stored));
+      // A click can land before IndexedDB resolves on a cold start. Never let
+      // that late read overwrite a choice the user has already made.
+      if (!dirtyRef.current) setSettings(mergeSettings(stored));
       setLoaded(true);
     });
     return () => {
@@ -110,6 +114,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const update = useCallback((patch: Partial<Settings>) => {
+    dirtyRef.current = true;
     setSettings((current) => {
       const next = mergeSettings({ ...current, ...patch });
       void writeSettings(next);

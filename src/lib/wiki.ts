@@ -196,6 +196,9 @@ export function parseSeriesPage(html: string, series: SeriesDef): Entry[] {
     // mistaken for separate catalog entries.
     const anchor = listItem.querySelector(':scope > a[href]');
     if (!anchor) continue;
+    // Wikidot series indexes also list reserved numbers as red links marked
+    // .newpage. They do not have an article and must not enter the catalog.
+    if (anchor.classList.contains('newpage')) continue;
     const href = anchor.getAttribute('href') ?? '';
     const match = href.match(/^\/(scp-[a-z0-9-]+)\/?$/i);
     if (!match) continue;

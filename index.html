@@ -33,9 +33,9 @@
         var clearance = localStorage.getItem('scp-clearance');
         var allowed = ['o5', 'l4', 'l3', 'l2', 'l1', 'd'];
         document.documentElement.dataset.clearance =
-          allowed.indexOf(clearance) >= 0 ? clearance : 'l3';
+          allowed.indexOf(clearance) >= 0 ? clearance : 'o5';
       } catch (error) {
-        document.documentElement.dataset.clearance = 'l3';
+        document.documentElement.dataset.clearance = 'o5';
       }
     </script>
     <style>

@@ -160,9 +160,6 @@ export function Reader() {
     window.scrollTo({ top: 0, behavior: 'auto' });
 
     void (async () => {
-      const isBlocked = (target: Article) =>
-        articleAccess(articleSecurity(target).required, settings.clearance) === 'blocked';
-
       const [stored, saved, cachedTranslation] = await Promise.all([
         readArticle(branch, slug),
         getReadingProgress(branch, slug),
@@ -178,16 +175,14 @@ export function Reader() {
         setArticle(stored);
         setStatus('ready');
         setPercent(saved?.percent ?? 0);
-        if (!isBlocked(stored) && isOnline() && Date.now() - stored.fetchedAt > ARTICLE_TTL_MS) {
+        if (isOnline() && Date.now() - stored.fetchedAt > ARTICLE_TTL_MS) {
           void (async () => {
             try {
               const fresh = await fetchArticle(branch, slug);
               if (cancelled) return;
               setArticle(fresh);
-              if (!isBlocked(fresh)) {
-                await cacheArticle(fresh);
-                if (!cancelled) await refreshOffline();
-              }
+              await cacheArticle(fresh);
+              if (!cancelled) await refreshOffline();
             } catch {
               // Keep the cached copy when a background refresh fails.
             }
@@ -201,11 +196,9 @@ export function Reader() {
         if (cancelled) return;
         setArticle(fresh);
         setStatus('ready');
-        if (!isBlocked(fresh)) {
-          void cacheArticle(fresh)
-            .then(() => (cancelled ? undefined : refreshOffline()))
-            .catch(() => undefined);
-        }
+        void cacheArticle(fresh)
+          .then(() => (cancelled ? undefined : refreshOffline()))
+          .catch(() => undefined);
       } catch (loadError) {
         if (cancelled) return;
         restoringRef.current = false;
@@ -266,6 +259,20 @@ export function Reader() {
     body.addEventListener('error', onError, true);
     return () => body.removeEventListener('error', onError, true);
   }, [article]);
+
+  // Even when the gate blocks the body, keep the archive in history so the
+  // entry reflects that it was opened. Preserve any earlier reading position.
+  useEffect(() => {
+    if (status !== 'ready' || !article || !blocked) return;
+    saveProgress({
+      branch,
+      slug,
+      code: article.code,
+      title: article.title,
+      percent: savedRef.current?.percent ?? 0,
+      updatedAt: Date.now(),
+    });
+  }, [status, article, blocked, branch, slug, saveProgress]);
 
   useEffect(() => {
     if (status !== 'ready' || !article || blocked) return;

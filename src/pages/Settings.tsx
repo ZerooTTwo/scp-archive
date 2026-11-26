@@ -169,7 +169,7 @@ export function SettingsPage() {
 
           <p className="clearance-note">
             <Icon name="info" size={13} />
-            这是阅读氛围设定：切换后配色、栏目与正文脱敏会立刻改变，不构成真实访问控制。
+            这是阅读氛围设定：新安装默认 O5。切换后配色、栏目与正文脱敏会立刻改变，不构成真实访问控制。
           </p>
         </div>
       </section>
@@ -474,7 +474,7 @@ export function SettingsPage() {
       <section className="settings-group">
         <h2 className="settings-group__title">关于</h2>
         <div className="settings-card">
-          <SettingRow title="SCP Archive" description="版本 0.6.0 · Capacitor + React">
+          <SettingRow title="SCP Archive" description="版本 0.6.1 · Capacitor + React">
             <Button variant="text" onClick={() => update(DEFAULT_SETTINGS)}>
               恢复默认
             </Button>
